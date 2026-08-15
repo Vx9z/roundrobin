@@ -2,21 +2,28 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.3.0",
+    "cookie-parser": "^1.4.7",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "express-handlebars": "^9.0.1",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "socket.io": "^4.8.3"
   },
   "name": "roundrobin",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  }
 }
