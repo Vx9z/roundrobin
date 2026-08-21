@@ -1,0 +1,9 @@
+<h2>Search Users</h2>
+<ul>
+  {{#each users}}
+    <li><a href="/profile/{{this.userID}}">{{this.username}}</a></li>
+  {{/each}}
+</ul>
+
+<!-- Navigation back to your own profile -->
+<p><a href="/profile/{{currentUserID}}" class="back-link">← Back to My Profile</a></p>

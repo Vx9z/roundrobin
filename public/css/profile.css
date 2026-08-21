@@ -5,15 +5,32 @@
   border: 1px solid #ddd;
   border-radius: 10px;
   background: #f9f9f9;
-  text-align: left;
 }
 
-.profile-container h2 {
-  color: #0078d7;
-  margin-bottom: 15px;
+button {
+  margin: 5px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.profile-container p {
-  font-size: 16px;
-  margin: 8px 0;
+.btn-edit {
+  background-color: #0078d7;
+  color: white;
+}
+
+.btn-follow {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-unfollow {
+  background-color: #ffc107;
+  color: black;
+}
+
+.btn-block {
+  background-color: #dc3545;
+  color: white;
 }

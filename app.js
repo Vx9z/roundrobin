@@ -3,9 +3,9 @@ const path = require("path");
 const exphbs = require("express-handlebars");
 const sequelize = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes"); // ✅ add this
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const User = require("./models/User");
 
 const app = express();
 app.use(express.json());
@@ -19,6 +19,7 @@ app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use("/auth", authRoutes);
+app.use("/", userRoutes); // ✅ mount user routes
 
 // Root route: gatekeeper
 app.get("/", (req, res) => {
@@ -36,19 +37,6 @@ app.get("/", (req, res) => {
 // Page routes
 app.get("/login", (req, res) => res.render("auth/login", { title: "Login Page" }));
 app.get("/register", (req, res) => res.render("auth/register", { title: "Register Page" }));
-
-// Profile route
-app.get("/profile/:id", async (req, res) => {
-  const user = await User.findByPk(req.params.id);
-  if (!user) return res.redirect("/login");
-
-  res.render("user/profile", {
-    title: "User Profile",
-    username: user.username,
-    email: user.email,
-    clearanceLevel: user.clearanceLevel
-  });
-});
 
 sequelize.sync().then(() => {
   app.listen(3000, () => console.log("Server running on http://localhost:3000"));

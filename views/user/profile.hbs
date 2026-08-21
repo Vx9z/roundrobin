@@ -2,9 +2,7 @@
 <html>
 <head>
   <title>{{title}}</title>
-  <!-- Global styles -->
   <link rel="stylesheet" href="/css/style.css">
-  <!-- Profile-specific styles -->
   <link rel="stylesheet" href="/css/profile.css">
 </head>
 <body>
@@ -12,6 +10,33 @@
     <h2>Welcome, {{username}}</h2>
     <p>Email: {{email}}</p>
     <p>Clearance Level: {{clearanceLevel}}</p>
+
+    {{#if profileOwner}}
+      <!-- Own profile -->
+      <form action="/profile/{{userID}}/edit" method="get">
+        <button type="submit" class="btn-edit">Edit Profile</button>
+      </form>
+    {{else}}
+      <!-- Someone else's profile -->
+      {{#if isBlocked}}
+        <p>You are blocked from viewing this profile.</p>
+      {{else}}
+        <form action="/profile/{{userID}}/follow" method="post">
+          <button type="submit" class="btn-follow">Follow</button>
+        </form>
+
+        <form action="/profile/{{userID}}/unfollow" method="post">
+          <button type="submit" class="btn-unfollow">Unfollow</button>
+        </form>
+
+        <form action="/profile/{{userID}}/block" method="post">
+          <button type="submit" class="btn-block">Block</button>
+        </form>
+      {{/if}}
+    {{/if}}
+
+    <!-- Navigation back to search -->
+    <p><a href="/search" class="back-link">← Back to Search</a></p>
   </div>
 </body>
 </html>
