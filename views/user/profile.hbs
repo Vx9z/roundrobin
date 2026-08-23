@@ -12,27 +12,33 @@
     <p>Clearance Level: {{clearanceLevel}}</p>
 
     {{#if profileOwner}}
-      <!-- Own profile -->
-      <form action="/profile/{{userID}}/edit" method="get">
+    <form action="/profile/{{userID}}/edit" method="get">
         <button type="submit" class="btn-edit">Edit Profile</button>
-      </form>
+    </form>
+
+    <h3>Friends</h3>
+    <ul>
+        {{#each friendsList}}
+        <li><a href="/profile/{{this.userID}}">{{this.username}}</a></li>
+        {{/each}}
+    </ul>
     {{else}}
-      <!-- Someone else's profile -->
-      {{#if isBlocked}}
+    {{#if isBlocked}}
         <p>You are blocked from viewing this profile.</p>
-      {{else}}
-        <form action="/profile/{{userID}}/follow" method="post">
-          <button type="submit" class="btn-follow">Follow</button>
-        </form>
-
+    {{else}}
+        {{#if isFollowing}}
         <form action="/profile/{{userID}}/unfollow" method="post">
-          <button type="submit" class="btn-unfollow">Unfollow</button>
+            <button type="submit" class="btn-unfollow">Unfollow</button>
         </form>
-
+        {{else}}
+        <form action="/profile/{{userID}}/follow" method="post">
+            <button type="submit" class="btn-follow">Follow</button>
+        </form>
+        {{/if}}
         <form action="/profile/{{userID}}/block" method="post">
-          <button type="submit" class="btn-block">Block</button>
+        <button type="submit" class="btn-block">Block</button>
         </form>
-      {{/if}}
+    {{/if}}
     {{/if}}
 
     <!-- Navigation back to search -->

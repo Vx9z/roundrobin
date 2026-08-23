@@ -43,10 +43,34 @@ exports.viewProfile = async (req, res) => {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.redirect("/search");
 
-    // Check if profile owner blocked the current user
+    // Check if profile owner blocked current user
     const blocked = await UserRelationship.findOne({
       where: { followerID: user.userID, followingID: currentUserID, type: "block" }
     });
+
+    // Check if current user follows this profile
+    const following = await UserRelationship.findOne({
+      where: { followerID: currentUserID, followingID: user.userID, type: "follow" }
+    });
+
+    // If viewing own profile, fetch friends (mutual follows)
+    let friendsList = [];
+    if (currentUserID === user.userID) {
+      const friends = await UserRelationship.findAll({
+        where: { followerID: currentUserID, type: "follow" },
+        include: [{ model: User, as: "FollowingUser", attributes: ["userID", "username"] }]
+      });
+
+      // Filter only mutual follows
+      for (const rel of friends) {
+        const backFollow = await UserRelationship.findOne({
+          where: { followerID: rel.followingID, followingID: currentUserID, type: "follow" }
+        });
+        if (backFollow) {
+          friendsList.push(rel.FollowingUser.get({ plain: true }));
+        }
+      }
+    }
 
     res.render("user/profile", {
       title: "User Profile",
@@ -55,12 +79,15 @@ exports.viewProfile = async (req, res) => {
       email: user.email,
       clearanceLevel: user.clearanceLevel,
       profileOwner: currentUserID === user.userID,
-      isBlocked: !!blocked
+      isBlocked: !!blocked,
+      isFollowing: !!following,
+      friendsList
     });
   } catch (err) {
     res.status(500).send("Error loading profile: " + err.message);
   }
 };
+
 
 exports.followUser = async (req, res) => {
   try {

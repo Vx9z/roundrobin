@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const User = require("./user"); // import User model
 
 const UserRelationships = sequelize.define("UserRelationships", {
   followerID: {
@@ -12,7 +13,7 @@ const UserRelationships = sequelize.define("UserRelationships", {
   },
   type: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false // "follow" or "block"
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -22,5 +23,9 @@ const UserRelationships = sequelize.define("UserRelationships", {
   tableName: "userRelationships",
   timestamps: false
 });
+
+// ✅ Define associations
+UserRelationships.belongsTo(User, { as: "FollowerUser", foreignKey: "followerID" });
+UserRelationships.belongsTo(User, { as: "FollowingUser", foreignKey: "followingID" });
 
 module.exports = UserRelationships;
