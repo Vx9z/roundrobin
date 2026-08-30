@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/messages.css">
+</head>
+<body>
+<div class="messages-container">
+  {{> navbar}}
+
+  <h2>{{headerName}}</h2>
+  {{#if isGroup}}
+    <p class="thread-members">
+      {{#each members}}{{username}} {{/each}}
+    </p>
+    <form action="/messages/{{conversationID}}/leave" method="post" class="inline-form">
+      <button type="submit" class="btn-leave">Leave group</button>
+    </form>
+  {{/if}}
+
+  <p class="refresh-link"><a href="/messages/{{conversationID}}">↻ Refresh</a></p>
+
+  <div class="message-list" id="message-list"
+       data-conversation-id="{{conversationID}}"
+       data-current-user-id="{{currentUserID}}">
+    {{#each messages}}
+      <div class="message {{#if isMine}}message-mine{{else}}message-other{{/if}}">
+        <span class="message-sender">{{senderUsername}}</span>
+        <p class="message-content">{{content}}</p>
+        <span class="message-date">{{createdAtDisplay}}</span>
+      </div>
+    {{/each}}
+  </div>
+
+  <form action="/messages/{{conversationID}}/send" method="post" class="message-form">
+    <input type="text" name="content" placeholder="Write a message..." autocomplete="off" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <p><a href="/messages" class="back-link">← Back to Messages</a></p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/messages.css">
+</head>
+<body>
+<div class="messages-container">
+  {{> navbar}}
+
+  <h2>Messages</h2>
+
+  <p class="refresh-link"><a href="/messages">↻ Refresh</a></p>
+
+  <p class="message-actions">
+    <a href="/messages/new">New message</a> |
+    <a href="/messages/groups/new">New group</a>
+  </p>
+
+  <div class="conversation-list">
+    {{#if conversations.length}}
+      {{#each conversations}}
+        <a href="/messages/{{conversationID}}" class="conversation-row">
+          <span class="conversation-name">{{displayName}}{{#if isGroup}} <span class="group-tag">group · {{otherCount}} others</span>{{/if}}</span>
+          {{#if lastMessagePreview}}
+            <span class="conversation-preview">{{lastMessagePreview}}</span>
+          {{else}}
+            <span class="conversation-preview conversation-empty">No messages yet</span>
+          {{/if}}
+          <span class="conversation-date">{{lastMessageAtDisplay}}</span>
+        </a>
+      {{/each}}
+    {{else}}
+      <p>No conversations yet. Start one with a friend.</p>
+    {{/if}}
+  </div>
+</div>
+
+</body>
+</html>

@@ -14,9 +14,12 @@ const repostRoutes = require("./routes/repostRoutes");      // reposts
 const notificationRoutes = require("./routes/notificationRoutes"); // notification list + read
 const communityRoutes = require("./routes/communityRoutes");       // browse/create/join/leave + boards
 const moderationRoutes = require("./routes/moderationRoutes");     // community + platform moderation
+const messageRoutes = require("./routes/messageRoutes");           // DMs + group chat
 const cookieParser = require("cookie-parser");
 const { getCurrentUserID } = require("./middleware/auth");
 const { attachNavContext } = require("./middleware/navContext");
+const http = require("http");
+const { attachSocket } = require("./config/socket");
 
 const app = express();
 app.use(express.json());
@@ -41,6 +44,7 @@ app.use("/", repostRoutes);        // repost posts
 app.use("/", notificationRoutes);  // notification list + mark read
 app.use("/", communityRoutes);     // browse/create/join/leave communities + boards
 app.use("/", moderationRoutes);    // community mod dashboard + admin dashboard
+app.use("/", messageRoutes);       // inbox, DM/group creation, threads
 app.use(uploadRoutes);             // upload endpoints
 
 // Handlebars setup
@@ -65,6 +69,14 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => res.render("auth/login", { title: "Login Page" }));
 app.get("/register", (req, res) => res.render("auth/register", { title: "Register Page" }));
 
+// socket.io needs the raw http.Server, not the Express app object, so the
+// server is created explicitly instead of using app.listen().
+const server = http.createServer(app);
+const io = attachSocket(server);
+
+// Makes io reachable from any controller via req.app.get("io").
+app.set("io", io);
+
 sequelize.sync().then(() => {
-  app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+  server.listen(3000, () => console.log("Server running on http://localhost:3000"));
 });

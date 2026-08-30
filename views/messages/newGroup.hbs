@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/messages.css">
+</head>
+<body>
+<div class="messages-container">
+  {{> navbar}}
+
+  <h2>New Group</h2>
+
+  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+
+  <form action="/messages/groups" method="post">
+    <label>Group name:</label>
+    <input type="text" name="name" required><br>
+
+    <label>Members:</label>
+    <div class="member-picker">
+      {{#if friends.length}}
+        {{#each friends}}
+          <label class="member-option">
+            <input type="checkbox" name="memberIDs" value="{{userID}}"> {{username}}
+          </label>
+        {{/each}}
+      {{else}}
+        <p>You can only add friends (people you follow who follow you back).</p>
+      {{/if}}
+    </div>
+
+    <button type="submit">Create group</button>
+  </form>
+  <p class="hint">Members are fixed when the group is created and cannot be added later.</p>
+
+  <p><a href="/messages" class="back-link">← Back to Messages</a></p>
+</div>
+
+</body>
+</html>

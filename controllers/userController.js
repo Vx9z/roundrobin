@@ -4,6 +4,37 @@ const { getCurrentUserID } = require("../middleware/auth");
 const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
 
+// Mutual follows ("friends"): people this user follows who follow back.
+// Returns plain objects [{ userID, username }].
+async function getFriends(userID) {
+  const following = await UserRelationship.findAll({
+    where: { followerID: userID, type: "follow" },
+    include: [{ model: User, as: "FollowingUser", attributes: ["userID", "username"] }]
+  });
+
+  const friends = [];
+  for (const rel of following) {
+    const backFollow = await UserRelationship.findOne({
+      where: { followerID: rel.followingID, followingID: userID, type: "follow" }
+    });
+    if (backFollow) friends.push(rel.FollowingUser.get({ plain: true }));
+  }
+  return friends;
+}
+exports.getFriends = getFriends;
+
+async function areMutualFollows(userA, userB) {
+  const forward = await UserRelationship.findOne({
+    where: { followerID: userA, followingID: userB, type: "follow" }
+  });
+  if (!forward) return false;
+  const back = await UserRelationship.findOne({
+    where: { followerID: userB, followingID: userA, type: "follow" }
+  });
+  return !!back;
+}
+exports.areMutualFollows = areMutualFollows;
+
 exports.searchUsers = async (req, res) => {
   try {
     const currentUserID = getCurrentUserID(req);
@@ -45,23 +76,7 @@ exports.viewProfile = async (req, res) => {
     });
 
     // If viewing own profile, fetch friends (mutual follows)
-    let friendsList = [];
-    if (currentUserID === user.userID) {
-      const friends = await UserRelationship.findAll({
-        where: { followerID: currentUserID, type: "follow" },
-        include: [{ model: User, as: "FollowingUser", attributes: ["userID", "username"] }]
-      });
-
-      // Filter only mutual follows
-      for (const rel of friends) {
-        const backFollow = await UserRelationship.findOne({
-          where: { followerID: rel.followingID, followingID: currentUserID, type: "follow" }
-        });
-        if (backFollow) {
-          friendsList.push(rel.FollowingUser.get({ plain: true }));
-        }
-      }
-    }
+    const friendsList = currentUserID === user.userID ? await getFriends(currentUserID) : [];
 
     const posts = await getProfilePosts(user.userID, currentUserID);
 

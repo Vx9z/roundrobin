@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/messages.css">
+</head>
+<body>
+<div class="messages-container">
+  {{> navbar}}
+
+  <h2>New Message</h2>
+
+  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+
+  {{#if friends.length}}
+    <form action="/messages/dm" method="post">
+      <select name="userID" required>
+        {{#each friends}}
+          <option value="{{userID}}">{{username}}</option>
+        {{/each}}
+      </select>
+      <button type="submit">Start conversation</button>
+    </form>
+  {{else}}
+    <p>You can only message friends (people you follow who follow you back).</p>
+  {{/if}}
+
+  <p><a href="/messages" class="back-link">← Back to Messages</a></p>
+</div>
+
+</body>
+</html>
