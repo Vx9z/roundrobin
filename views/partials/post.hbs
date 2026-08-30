@@ -41,6 +41,15 @@
         <input type="hidden" name="returnTo" value="{{returnTo}}">
         <button type="submit" class="btn-delete-post">Delete</button>
       </form>
+    {{else}}
+      {{#if isReportedByMe}}
+        <button type="button" class="btn-reported" disabled>⚑ Reported</button>
+      {{else}}
+        <form action="/posts/{{postID}}/report" method="post" class="inline-form">
+          <input type="hidden" name="returnTo" value="{{returnTo}}">
+          <button type="submit" class="btn-report">⚑ Report</button>
+        </form>
+      {{/if}}
     {{/if}}
   </div>
 

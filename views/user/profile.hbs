@@ -55,6 +55,13 @@
         <button type="submit" class="btn-block">Block</button>
       </form>
     {{/if}}
+    {{#if isReportedByMe}}
+      <button type="button" class="btn-reported" disabled>⚑ Reported</button>
+    {{else}}
+      <form action="/profile/{{userID}}/report" method="post">
+        <button type="submit" class="btn-report">⚑ Report user</button>
+      </form>
+    {{/if}}
   {{/if}}
 
   {{> navbar}}

@@ -5,6 +5,7 @@ const { getCurrentUserID } = require("../middleware/auth");
 const { isCommunityMod } = require("../middleware/permissions");
 const { createNotification } = require("./notificationController");
 const { hydratePost } = require("./postController");
+const { hasReported } = require("./reportController");
 
 exports.listCommunities = async (req, res) => {
   try {
@@ -81,6 +82,7 @@ exports.showCommunity = async (req, res) => {
     const isMember = !!membership && membership.status === "active";
     const isBanned = !!membership && membership.status === "banned";
     const isMod = await isCommunityMod(currentUserID, community.communityID);
+    const isReportedByMe = await hasReported(currentUserID, "community", community.communityID);
 
     const rawPosts = await Post.findAll({ where: { communityID: community.communityID }, order: [["createdAt", "DESC"]] });
     const posts = await Promise.all(rawPosts.map(p => hydratePost(p, currentUserID)));
@@ -96,6 +98,7 @@ exports.showCommunity = async (req, res) => {
       isMember,
       isBanned,
       isMod,
+      isReportedByMe,
       returnTo: `/communities/${community.communityID}`,
       posts
     });

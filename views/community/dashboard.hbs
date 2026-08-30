@@ -51,6 +51,32 @@
     {{/each}}
   </table>
 
+  <h3>Reported posts ({{reportedPostCount}})</h3>
+  {{#if reportedPosts.length}}
+    <table>
+      <tr><th>Post</th><th>Author</th><th>Reports</th><th>First reported</th><th>Actions</th></tr>
+      {{#each reportedPosts}}
+        <tr>
+          <td>{{preview}}{{#if hasMedia}} <em>[media]</em>{{/if}}</td>
+          <td><a href="/profile/{{authorID}}">{{authorUsername}}</a></td>
+          <td>{{reportCount}}</td>
+          <td>{{firstReportedAtDisplay}}</td>
+          <td>
+            <form action="/posts/{{postID}}/report/dismiss" method="post" class="inline-form">
+              <input type="hidden" name="returnTo" value="{{../returnTo}}">
+              <button type="submit">Dismiss</button>
+            </form>
+            <form action="/communities/{{../communityID}}/posts/{{postID}}/delete" method="post" class="inline-form">
+              <button type="submit" class="btn-delete-post">Remove post</button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </table>
+  {{else}}
+    <p>No reported posts in this community.</p>
+  {{/if}}
+
   <h3>Posts in this community</h3>
   {{#each posts}}
     <div class="mod-post-row">

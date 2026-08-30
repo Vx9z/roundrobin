@@ -33,6 +33,13 @@
     {{#if isMod}}
       <a href="/communities/{{communityID}}/dashboard" class="mod-dashboard-link">Moderator dashboard</a>
     {{/if}}
+    {{#if isReportedByMe}}
+      <button type="button" class="btn-reported" disabled>⚑ Reported</button>
+    {{else}}
+      <form action="/communities/{{communityID}}/report" method="post" class="inline-form">
+        <button type="submit" class="btn-report">⚑ Report community</button>
+      </form>
+    {{/if}}
   </p>
 
   <p class="refresh-link"><a href="/communities/{{communityID}}">↻ Refresh</a></p>

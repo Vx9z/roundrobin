@@ -7,3 +7,5 @@ button { background: #0078d7; color: white; border: none; border-radius: 5px; }
 .badge { background: #d9534f; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.8em; }
 .admin-link { color: #b00; font-weight: bold; }
 .refresh-link { margin-bottom: 10px; }
+.btn-report { background: #eee; color: #444; }
+.btn-reported { background: #eee; color: #999; cursor: default; }

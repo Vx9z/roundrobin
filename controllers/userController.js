@@ -3,6 +3,7 @@ const UserRelationship = require("../models/userRelationships");
 const { getCurrentUserID } = require("../middleware/auth");
 const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
+const { hasReported } = require("./reportController");
 
 // Mutual follows ("friends"): people this user follows who follow back.
 // Returns plain objects [{ userID, username }].
@@ -78,6 +79,10 @@ exports.viewProfile = async (req, res) => {
     // If viewing own profile, fetch friends (mutual follows)
     const friendsList = currentUserID === user.userID ? await getFriends(currentUserID) : [];
 
+    const isReportedByMe = currentUserID === user.userID
+      ? false
+      : await hasReported(currentUserID, "user", user.userID);
+
     const posts = await getProfilePosts(user.userID, currentUserID);
 
     res.render("user/profile", {
@@ -89,6 +94,7 @@ exports.viewProfile = async (req, res) => {
       profileOwner: currentUserID === user.userID,
       isBlocked: !!blocked,
       isFollowing: !!following,
+      isReportedByMe,
       friendsList,
       posts,
       returnTo: `/profile/${user.userID}`

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/analytics.css">
+</head>
+<body>
+<div class="dashboard-container">
+  {{> navbar}}
+
+  <p><a href="/admin/dashboard">← Back to platform moderation</a></p>
+
+  <h2>{{username}}</h2>
+  <p class="analytics-header">
+    <a href="/profile/{{userID}}">View public profile</a>
+    {{#if isSuspended}}<span class="report-flag"> · SUSPENDED</span>{{/if}}
+    {{#if isTargetGeneralMod}}<span class="admin-note"> · platform moderator</span>{{/if}}
+  </p>
+  <p class="chart-meta">Email: {{email}} · Clearance: {{clearanceLevel}} · Joined: {{joinedAtDisplay}}</p>
+  {{#if bio}}<p class="chart-meta">Bio: {{bio}}</p>{{/if}}
+
+  <h3>Posting frequency (last {{chart.days}} days)</h3>
+  {{#if chart.hasPosts}}
+    <svg class="post-chart" width="{{chart.width}}" height="{{chart.height}}"
+         viewBox="0 0 {{chart.width}} {{chart.height}}" role="img">
+      <line class="chart-baseline" x1="0" y1="{{chart.baselineY}}"
+            x2="{{chart.width}}" y2="{{chart.baselineY}}"></line>
+      {{#each chart.bars}}
+        <rect class="{{#if isEmpty}}chart-bar-empty{{else}}chart-bar{{/if}}"
+              x="{{x}}" y="{{y}}" width="{{width}}" height="{{height}}">
+          <title>{{tooltip}}</title>
+        </rect>
+        {{#if showLabel}}
+          <text class="chart-label" x="{{labelX}}" y="{{labelY}}" text-anchor="middle">{{label}}</text>
+        {{/if}}
+      {{/each}}
+    </svg>
+    <p class="chart-meta">
+      {{chart.totalInWindow}} posts from {{chart.startLabel}} to {{chart.endLabel}} ·
+      busiest day: {{chart.maxCount}}
+    </p>
+  {{else}}
+    <p class="chart-empty">No posts in the last {{chart.days}} days.</p>
+  {{/if}}
+
+  <h3>Activity</h3>
+  <div class="stat-grid">
+    <div class="stat-card"><span class="stat-value">{{postCount}}</span><span class="stat-label">Posts</span></div>
+    <div class="stat-card"><span class="stat-value">{{commentCount}}</span><span class="stat-label">Comments</span></div>
+    <div class="stat-card"><span class="stat-value">{{likeGivenCount}}</span><span class="stat-label">Likes given</span></div>
+    <div class="stat-card"><span class="stat-value">{{repostCount}}</span><span class="stat-label">Reposts</span></div>
+    <div class="stat-card"><span class="stat-value">{{bookmarkCount}}</span><span class="stat-label">Bookmarks</span></div>
+  </div>
+
+  <h3>Social</h3>
+  <div class="stat-grid">
+    <div class="stat-card"><span class="stat-value">{{followerCount}}</span><span class="stat-label">Followers</span></div>
+    <div class="stat-card"><span class="stat-value">{{followingCount}}</span><span class="stat-label">Following</span></div>
+    <div class="stat-card"><span class="stat-value">{{friendCount}}</span><span class="stat-label">Friends</span></div>
+    <div class="stat-card"><span class="stat-value">{{blockedCount}}</span><span class="stat-label">Accounts blocked</span></div>
+    <div class="stat-card"><span class="stat-value">{{membershipCount}}</span><span class="stat-label">Communities</span></div>
+  </div>
+
+  <h3>Reports</h3>
+  <div class="stat-grid">
+    <div class="stat-card"><span class="stat-value">{{pendingReportCount}}</span><span class="stat-label">Pending against user</span></div>
+    <div class="stat-card"><span class="stat-value">{{dismissedReportCount}}</span><span class="stat-label">Dismissed</span></div>
+    <div class="stat-card"><span class="stat-value">{{pendingPostReportCount}}</span><span class="stat-label">Pending on their posts</span></div>
+  </div>
+  {{#if hasPendingReports}}
+    <p class="report-flag">This account has unreviewed reports against it.</p>
+    <form action="/admin/reports/users/{{userID}}/dismiss" method="post" class="inline-form">
+      <button type="submit">Dismiss all pending reports</button>
+    </form>
+  {{/if}}
+
+  <h3>Communities</h3>
+  {{#if memberships.length}}
+    <table>
+      <tr><th>Community</th><th>Role</th><th>Status</th></tr>
+      {{#each memberships}}
+        <tr>
+          <td><a href="/communities/{{communityID}}">{{name}}</a></td>
+          <td>{{role}}</td>
+          <td>{{status}}</td>
+        </tr>
+      {{/each}}
+    </table>
+  {{else}}
+    <p>Not a member of any community.</p>
+  {{/if}}
+
+  <h3>Friends ({{friendCount}})</h3>
+  <ul>
+    {{#each friends}}<li><a href="/profile/{{userID}}">{{username}}</a></li>{{/each}}
+  </ul>
+
+  <h3>Moderator actions</h3>
+  {{#unless isSelf}}
+    {{#if isSuspended}}
+      <form action="/admin/users/{{userID}}/unsuspend" method="post" class="inline-form">
+        <button type="submit">Unsuspend</button>
+      </form>
+    {{else}}
+      <form action="/admin/users/{{userID}}/suspend" method="post" class="inline-form">
+        <button type="submit" class="btn-delete-post">Suspend</button>
+      </form>
+    {{/if}}
+  {{/unless}}
+</div>
+
+</body>
+</html>

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict W31LLCmNtmcQOcAvXYwKIXkuKjct55B1v1ZGxpO1pI1ZjYe6TWs0l9EX6UmLmAG
+\restrict HUnYAPzrZ10oQstdj5uh5qPtj34MVXYID3QD1LEH38RvZqcwfCRmN7fTjX6psXJ
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -82,6 +82,83 @@ CREATE TABLE public.communities (
 ALTER TABLE public.communities OWNER TO postgres;
 
 --
+-- Name: communitymembers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.communitymembers (
+    communityid uuid NOT NULL,
+    userid uuid NOT NULL,
+    role character varying(20) DEFAULT 'member'::character varying NOT NULL,
+    status character varying(20) DEFAULT 'active'::character varying NOT NULL,
+    joinedat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.communitymembers OWNER TO postgres;
+
+--
+-- Name: conversationparticipants; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.conversationparticipants (
+    conversationid uuid NOT NULL,
+    userid uuid NOT NULL,
+    joinedat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.conversationparticipants OWNER TO postgres;
+
+--
+-- Name: conversations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.conversations (
+    conversationid uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    type character varying(10) NOT NULL,
+    name character varying(100),
+    dmkey text,
+    createdby uuid,
+    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.conversations OWNER TO postgres;
+
+--
+-- Name: messages; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.messages (
+    messageid uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    conversationid uuid NOT NULL,
+    senderid uuid,
+    content text NOT NULL,
+    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.messages OWNER TO postgres;
+
+--
+-- Name: notifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notifications (
+    notificationid uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    recipientid uuid NOT NULL,
+    actorid uuid,
+    type character varying(30) NOT NULL,
+    entitytype character varying(20),
+    entityid uuid,
+    isread boolean DEFAULT false NOT NULL,
+    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.notifications OWNER TO postgres;
+
+--
 -- Name: posts; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -111,6 +188,22 @@ CREATE TABLE public.reactions (
 
 
 ALTER TABLE public.reactions OWNER TO postgres;
+
+--
+-- Name: reports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reports (
+    reportid uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    reporterid uuid NOT NULL,
+    entitytype character varying(20) NOT NULL,
+    entityid uuid NOT NULL,
+    status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.reports OWNER TO postgres;
 
 --
 -- Name: reposts; Type: TABLE; Schema: public; Owner: postgres
@@ -209,6 +302,54 @@ ALTER TABLE ONLY public.communities
 
 
 --
+-- Name: communitymembers communitymembers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.communitymembers
+    ADD CONSTRAINT communitymembers_pkey PRIMARY KEY (communityid, userid);
+
+
+--
+-- Name: conversationparticipants conversationparticipants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversationparticipants
+    ADD CONSTRAINT conversationparticipants_pkey PRIMARY KEY (conversationid, userid);
+
+
+--
+-- Name: conversations conversations_dmkey_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversations
+    ADD CONSTRAINT conversations_dmkey_key UNIQUE (dmkey);
+
+
+--
+-- Name: conversations conversations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversations
+    ADD CONSTRAINT conversations_pkey PRIMARY KEY (conversationid);
+
+
+--
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_pkey PRIMARY KEY (messageid);
+
+
+--
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (notificationid);
+
+
+--
 -- Name: posts posts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -222,6 +363,22 @@ ALTER TABLE ONLY public.posts
 
 ALTER TABLE ONLY public.reactions
     ADD CONSTRAINT reactions_pkey PRIMARY KEY (postid, userid, type);
+
+
+--
+-- Name: reports reports_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_pkey PRIMARY KEY (reportid);
+
+
+--
+-- Name: reports reports_reporter_entity_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_reporter_entity_key UNIQUE (reporterid, entitytype, entityid);
 
 
 --
@@ -273,6 +430,48 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: communitymembers_userid_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX communitymembers_userid_idx ON public.communitymembers USING btree (userid);
+
+
+--
+-- Name: conversationparticipants_userid_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX conversationparticipants_userid_idx ON public.conversationparticipants USING btree (userid);
+
+
+--
+-- Name: messages_conversation_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX messages_conversation_created_idx ON public.messages USING btree (conversationid, createdat);
+
+
+--
+-- Name: notifications_recipient_unread_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX notifications_recipient_unread_idx ON public.notifications USING btree (recipientid, isread);
+
+
+--
+-- Name: posts_communityid_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX posts_communityid_idx ON public.posts USING btree (communityid);
+
+
+--
+-- Name: reports_type_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX reports_type_status_idx ON public.reports USING btree (entitytype, status);
+
+
+--
 -- Name: bookmarks bookmarks_postid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -313,6 +512,78 @@ ALTER TABLE ONLY public.communities
 
 
 --
+-- Name: communitymembers communitymembers_communityid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.communitymembers
+    ADD CONSTRAINT communitymembers_communityid_fkey FOREIGN KEY (communityid) REFERENCES public.communities(communityid) ON DELETE CASCADE;
+
+
+--
+-- Name: communitymembers communitymembers_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.communitymembers
+    ADD CONSTRAINT communitymembers_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: conversationparticipants conversationparticipants_conversationid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversationparticipants
+    ADD CONSTRAINT conversationparticipants_conversationid_fkey FOREIGN KEY (conversationid) REFERENCES public.conversations(conversationid) ON DELETE CASCADE;
+
+
+--
+-- Name: conversationparticipants conversationparticipants_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversationparticipants
+    ADD CONSTRAINT conversationparticipants_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: conversations conversations_createdby_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.conversations
+    ADD CONSTRAINT conversations_createdby_fkey FOREIGN KEY (createdby) REFERENCES public.users(userid) ON DELETE SET NULL;
+
+
+--
+-- Name: messages messages_conversationid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_conversationid_fkey FOREIGN KEY (conversationid) REFERENCES public.conversations(conversationid) ON DELETE CASCADE;
+
+
+--
+-- Name: messages messages_senderid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_senderid_fkey FOREIGN KEY (senderid) REFERENCES public.users(userid) ON DELETE SET NULL;
+
+
+--
+-- Name: notifications notifications_actorid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_actorid_fkey FOREIGN KEY (actorid) REFERENCES public.users(userid) ON DELETE SET NULL;
+
+
+--
+-- Name: notifications notifications_recipientid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_recipientid_fkey FOREIGN KEY (recipientid) REFERENCES public.users(userid) ON DELETE CASCADE;
+
+
+--
 -- Name: posts posts_authorid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -342,6 +613,14 @@ ALTER TABLE ONLY public.reactions
 
 ALTER TABLE ONLY public.reactions
     ADD CONSTRAINT reactions_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: reports reports_reporterid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_reporterid_fkey FOREIGN KEY (reporterid) REFERENCES public.users(userid) ON DELETE CASCADE;
 
 
 --
@@ -388,5 +667,5 @@ ALTER TABLE ONLY public.userrelationships
 -- PostgreSQL database dump complete
 --
 
-\unrestrict W31LLCmNtmcQOcAvXYwKIXkuKjct55B1v1ZGxpO1pI1ZjYe6TWs0l9EX6UmLmAG
+\unrestrict HUnYAPzrZ10oQstdj5uh5qPtj34MVXYID3QD1LEH38RvZqcwfCRmN7fTjX6psXJ
 

@@ -1,0 +1,15 @@
+<aside class="trending-sidebar">
+  <h3>Trending this week</h3>
+  {{#if trending.length}}
+    <ul class="trending-list">
+      {{#each trending}}
+        <li>
+          <a href="/hashtags/{{tag}}" class="trending-tag">#{{tag}}</a>
+          <span class="trending-count">{{postLabel}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p class="trending-empty">Nothing trending yet.</p>
+  {{/if}}
+</aside>

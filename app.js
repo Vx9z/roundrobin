@@ -15,6 +15,7 @@ const notificationRoutes = require("./routes/notificationRoutes"); // notificati
 const communityRoutes = require("./routes/communityRoutes");       // browse/create/join/leave + boards
 const moderationRoutes = require("./routes/moderationRoutes");     // community + platform moderation
 const messageRoutes = require("./routes/messageRoutes");           // DMs + group chat
+const reportRoutes = require("./routes/reportRoutes");              // report posts/users/communities
 const cookieParser = require("cookie-parser");
 const { getCurrentUserID } = require("./middleware/auth");
 const { attachNavContext } = require("./middleware/navContext");
@@ -45,6 +46,7 @@ app.use("/", notificationRoutes);  // notification list + mark read
 app.use("/", communityRoutes);     // browse/create/join/leave communities + boards
 app.use("/", moderationRoutes);    // community mod dashboard + admin dashboard
 app.use("/", messageRoutes);       // inbox, DM/group creation, threads
+app.use("/", reportRoutes);        // report posts, users, communities
 app.use(uploadRoutes);             // upload endpoints
 
 // Handlebars setup

@@ -8,6 +8,7 @@ const Repost = require("../models/repost");
 const UserRelationship = require("../models/userRelationships");
 const CommunityMember = require("../models/communityMember");
 const { getCurrentUserID } = require("../middleware/auth");
+const { hasReported } = require("./reportController");
 
 async function hydratePost(post, currentUserID) {
   const author = await User.findByPk(post.authorID);
@@ -26,6 +27,7 @@ async function hydratePost(post, currentUserID) {
   const isLiked = !!(await Reaction.findOne({ where: { postID: post.postID, userID: currentUserID, type: "like" } }));
   const isBookmarked = !!(await Bookmark.findOne({ where: { postID: post.postID, userID: currentUserID } }));
   const isReposted = !!(await Repost.findOne({ where: { postID: post.postID, userID: currentUserID } }));
+  const isReportedByMe = await hasReported(currentUserID, "post", post.postID);
 
   return {
     postID: post.postID,
@@ -39,6 +41,7 @@ async function hydratePost(post, currentUserID) {
     isLiked,
     isBookmarked,
     isReposted,
+    isReportedByMe,
     comments: comments.map(c => ({
       authorID: c.authorID,
       authorUsername: authorMap[c.authorID] || "[deleted]",
@@ -112,7 +115,8 @@ exports.showFeed = async (req, res) => {
     if (!currentUserID) return res.redirect("/login");
 
     const posts = await exports.getFeedPosts(currentUserID);
-    res.render("feed", { title: "Home Feed", currentUserID, returnTo: "/feed", posts });
+    const trending = await exports.getTrendingHashtags();
+    res.render("feed", { title: "Home Feed", currentUserID, returnTo: "/feed", posts, trending });
   } catch (err) {
     res.status(500).send("Error loading feed: " + err.message);
   }
@@ -197,5 +201,78 @@ exports.showSuggested = async (req, res) => {
     res.render("suggested", { title: "Suggested Posts", currentUserID, returnTo: "/suggested", posts });
   } catch (err) {
     res.status(500).send("Error loading suggested posts: " + err.message);
+  }
+};
+
+// Lowercased so #JS and #js are one tag; de-duplicated per post so a post
+// that says "#js #js #js" counts once -- trending measures how many POSTS
+// use a tag, not how many times it was typed.
+function extractHashtags(content) {
+  if (!content) return [];
+  const matches = content.match(/#(\w+)/g) || [];
+  return [...new Set(matches.map(m => m.slice(1).toLowerCase()))];
+}
+exports.extractHashtags = extractHashtags;
+
+exports.getTrendingHashtags = async (limit = 10) => {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // last 7 days
+
+  const posts = await Post.findAll({
+    where: { createdAt: { [Op.gte]: since }, content: { [Op.ne]: null } },
+    attributes: ["postID", "content"]
+  });
+
+  const counts = {};
+  for (const p of posts) {
+    for (const tag of extractHashtags(p.content)) counts[tag] = (counts[tag] || 0) + 1;
+  }
+
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])) // alphabetical tiebreak, stable order
+    .slice(0, limit)
+    .map(([tag, count]) => ({ tag, count, postLabel: count === 1 ? "1 post" : `${count} posts` }));
+};
+
+// Every post using this tag, all time. The ILIKE is a cheap SQL pre-filter
+// ONLY -- it's allowed to return too many rows, never too few. Correctness
+// comes from re-running extractHashtags on each candidate and checking
+// membership, which is what stops "#java" wrongly matching a post that only
+// contains "#javascript" (a plain ILIKE substring match would not).
+exports.getPostsByHashtag = async (tag, currentUserID) => {
+  const normalized = tag.toLowerCase();
+
+  const candidates = await Post.findAll({
+    where: { content: { [Op.iLike]: `%#${normalized}%` } },
+    order: [["createdAt", "DESC"]],
+    limit: 100
+  });
+
+  const matches = candidates.filter(p => extractHashtags(p.content).includes(normalized));
+  return Promise.all(matches.map(p => hydratePost(p, currentUserID)));
+};
+
+exports.showHashtag = async (req, res) => {
+  try {
+    const currentUserID = getCurrentUserID(req);
+    if (!currentUserID) return res.redirect("/login");
+
+    const raw = req.params.tag || "";
+    // Not producible by our own tokenizer -> reject before it reaches SQL.
+    if (!/^\w+$/.test(raw)) return res.redirect("/feed");
+    const tag = raw.toLowerCase();
+
+    const posts = await exports.getPostsByHashtag(tag, currentUserID);
+    const trending = await exports.getTrendingHashtags();
+
+    res.render("hashtags/show", {
+      title: `#${tag}`,
+      currentUserID,
+      tag,
+      returnTo: `/hashtags/${tag}`,
+      posts,
+      trending
+    });
+  } catch (err) {
+    res.status(500).send("Error loading hashtag: " + err.message);
   }
 };
