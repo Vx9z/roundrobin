@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+  {{> navbar}}
+
+  <h2>Platform Moderation</h2>
+
+  <!-- Analytics section will go here later. No queries or code for it yet. -->
+  <div class="admin-stats-placeholder"></div>
+
+  <h3>Users</h3>
+  <table>
+    <tr><th>User</th><th>Clearance</th><th>Status</th><th>Actions</th></tr>
+    {{#each users}}
+      <tr>
+        <td><a href="/profile/{{userID}}">{{username}}</a></td>
+        <td>{{clearanceLevel}}</td>
+        <td>{{#if isSuspended}}SUSPENDED{{else}}active{{/if}}</td>
+        <td>
+          {{#unless isSelf}}
+            {{#if isSuspended}}
+              <form action="/admin/users/{{userID}}/unsuspend" method="post" class="inline-form">
+                <button type="submit">Unsuspend</button>
+              </form>
+            {{else}}
+              <form action="/admin/users/{{userID}}/suspend" method="post" class="inline-form">
+                <button type="submit" class="btn-delete-post">Suspend</button>
+              </form>
+            {{/if}}
+          {{/unless}}
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+
+  <h3>Communities</h3>
+  <table>
+    <tr><th>Community</th><th>Members</th><th>Manage</th><th>Delete</th></tr>
+    {{#each communities}}
+      <tr>
+        <td><a href="/communities/{{communityID}}">{{name}}</a></td>
+        <td>{{memberCount}}</td>
+        <td><a href="/communities/{{communityID}}/dashboard">Manage</a></td>
+        <td>
+          <form action="/communities/{{communityID}}/delete" method="post" class="inline-form">
+            <input type="text" name="confirmName" placeholder='Type "{{name}}" to confirm' required>
+            <button type="submit" class="btn-delete-post">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+</div>
+
+</body>
+</html>

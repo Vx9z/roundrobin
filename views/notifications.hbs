@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/notifications.css">
+</head>
+<body>
+<div class="notifications-container">
+  {{> navbar}}
+
+  <h2>Notifications</h2>
+
+  <p class="refresh-link"><a href="/notifications">↻ Refresh</a></p>
+
+  <form action="/notifications/read-all" method="post">
+    <button type="submit">Mark all read</button>
+  </form>
+
+  <div class="notification-list">
+    {{#if items.length}}
+      {{#each items}}
+        <div class="notification {{#unless isRead}}unread{{/unless}}">
+          <form action="/notifications/{{notificationID}}/read" method="post" class="inline-form">
+            <button type="submit" class="notification-link">{{text}}</button>
+          </form>
+          <span class="notification-date">{{createdAtDisplay}}</span>
+        </div>
+      {{/each}}
+    {{else}}
+      <p>No notifications yet.</p>
+    {{/if}}
+  </div>
+</div>
+
+</body>
+</html>

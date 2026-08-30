@@ -1,0 +1,29 @@
+.community-container { max-width: 600px; margin: 30px auto; padding: 20px; }
+
+.btn-create-community { display: inline-block; padding: 8px 14px; background: #0078d7; color: #fff; border-radius: 5px; text-decoration: none; margin-bottom: 15px; }
+
+.community-list { margin-top: 10px; }
+.community-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  background: #fff;
+  text-align: left;
+}
+.community-name { font-weight: bold; font-size: 1.1em; }
+.community-description { color: #555; margin: 4px 0; }
+.community-meta { color: #999; font-size: 0.85em; }
+.community-action .inline-form { display: inline; }
+.member-label { color: #2a7f2a; font-weight: bold; }
+.banned-label { color: #b00; font-weight: bold; }
+
+.community-banner { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
+.community-actions { display: flex; align-items: center; gap: 10px; }
+.community-actions .inline-form { display: inline-block; }
+.mod-dashboard-link { color: #b00; font-weight: bold; }
+
+.error { color: #b00; }

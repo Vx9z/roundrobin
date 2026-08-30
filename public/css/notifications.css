@@ -1,0 +1,25 @@
+.notifications-container { max-width: 600px; margin: 30px auto; padding: 20px; }
+
+.notification-list { margin-top: 15px; }
+.notification {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.notification.unread { background: #eef6ff; border-color: #b9dcff; }
+.notification .inline-form { display: inline; }
+.notification-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.notification-date { color: #999; font-size: 0.85em; white-space: nowrap; margin-left: 10px; }

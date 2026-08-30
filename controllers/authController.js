@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const UserProfile = require("../models/userProfile");
 
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -37,6 +38,13 @@ exports.login = async (req, res) => {
     return res.render("auth/login", { error: "Invalid credentials" });
   }
 
+  // Suspended accounts cannot log in. Checked AFTER the password check so we
+  // don't reveal an account's status to someone who doesn't know the password.
+  const profile = await UserProfile.findByPk(user.userID);
+  if (profile && profile.isDeleted) {
+    return res.render("auth/login", { error: "This account has been suspended." });
+  }
+
   // Create JWT token
   const token = jwt.sign(
     { id: user.userID, username: user.username },
@@ -47,6 +55,6 @@ exports.login = async (req, res) => {
   // Store token in cookie
   res.cookie("token", token, { httpOnly: true });
 
-  // Redirect to profile page
-  res.redirect(`/profile/${user.userID}`);
+  // Redirect to home feed
+  res.redirect("/feed");
 };

@@ -4,45 +4,72 @@
   <title>{{title}}</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/feed.css">
 </head>
 <body>
-  <div class="profile-container">
-    <h2>Welcome, {{username}}</h2>
-    <p>Email: {{email}}</p>
-    <p>Clearance Level: {{clearanceLevel}}</p>
+<div class="profile-container">
+  {{#if bannerURL}}
+    <img src="{{bannerURL}}" class="banner">
+  {{/if}}
 
-    {{#if profileOwner}}
+  {{#if avatarURL}}
+    <img src="{{avatarURL}}" class="avatar">
+  {{else}}
+    <div class="avatar-placeholder">No Picture</div>
+  {{/if}}
+
+  <h2>Welcome, {{username}}</h2>
+  <p>Email: {{email}}</p>
+  <p>Clearance Level: {{clearanceLevel}}</p>
+
+  {{#if bio}}
+    <p class="bio">{{bio}}</p>
+  {{/if}}
+
+  {{#if profileOwner}}
     <form action="/profile/{{userID}}/edit" method="get">
-        <button type="submit" class="btn-edit">Edit Profile</button>
+      <button type="submit" class="btn-edit">Edit Profile</button>
     </form>
+    <p><a href="/profile/{{userID}}/edit" class="edit-link">Go to Edit Profile</a></p>
 
     <h3>Friends</h3>
     <ul>
-        {{#each friendsList}}
+      {{#each friendsList}}
         <li><a href="/profile/{{this.userID}}">{{this.username}}</a></li>
-        {{/each}}
+      {{/each}}
     </ul>
-    {{else}}
+  {{else}}
     {{#if isBlocked}}
-        <p>You are blocked from viewing this profile.</p>
+      <p>You are blocked from viewing this profile.</p>
     {{else}}
-        {{#if isFollowing}}
+      {{#if isFollowing}}
         <form action="/profile/{{userID}}/unfollow" method="post">
-            <button type="submit" class="btn-unfollow">Unfollow</button>
+          <button type="submit" class="btn-unfollow">Unfollow</button>
         </form>
-        {{else}}
+      {{else}}
         <form action="/profile/{{userID}}/follow" method="post">
-            <button type="submit" class="btn-follow">Follow</button>
+          <button type="submit" class="btn-follow">Follow</button>
         </form>
-        {{/if}}
-        <form action="/profile/{{userID}}/block" method="post">
+      {{/if}}
+      <form action="/profile/{{userID}}/block" method="post">
         <button type="submit" class="btn-block">Block</button>
-        </form>
+      </form>
     {{/if}}
-    {{/if}}
+  {{/if}}
 
-    <!-- Navigation back to search -->
-    <p><a href="/search" class="back-link">← Back to Search</a></p>
+  {{> navbar}}
+
+  <h3>Posts</h3>
+  <div class="post-list">
+    {{#if posts.length}}
+      {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
+    {{else}}
+      <p>No posts yet.</p>
+    {{/if}}
   </div>
+
+  <p><a href="/search" class="back-link">← Back to Search</a></p>
+</div>
+
 </body>
 </html>

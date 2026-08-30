@@ -5,15 +5,18 @@ const User = require("./user"); // import User model
 const UserRelationships = sequelize.define("UserRelationships", {
   followerID: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   followingID: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   type: {
     type: DataTypes.STRING,
-    allowNull: false // "follow" or "block"
+    allowNull: false, // "follow" or "block"
+    primaryKey: true
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -21,7 +24,8 @@ const UserRelationships = sequelize.define("UserRelationships", {
   }
 }, {
   tableName: "userRelationships",
-  timestamps: false
+  timestamps: false,
+  id: false
 });
 
 // ✅ Define associations

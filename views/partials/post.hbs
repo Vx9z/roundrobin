@@ -1,0 +1,66 @@
+<div class="post-card">
+  <p class="post-author">
+    <a href="/profile/{{authorID}}">{{authorUsername}}</a>
+    {{#if repostedByUsername}}
+      <span class="repost-tag">↻ Reposted by {{repostedByUsername}}</span>
+    {{/if}}
+    <span class="post-date">{{createdAtDisplay}}</span>
+  </p>
+
+  {{#if content}}<p class="post-content">{{content}}</p>{{/if}}
+
+  {{#if mediaURL}}
+    {{#if (isVideoURL mediaURL)}}
+      <video src="{{mediaURL}}" controls class="post-media"></video>
+    {{else}}
+      <img src="{{mediaURL}}" class="post-media">
+    {{/if}}
+  {{/if}}
+
+  <div class="post-actions">
+    <form action="/posts/{{postID}}/like" method="post" class="inline-form">
+      <input type="hidden" name="returnTo" value="{{returnTo}}">
+      <button type="submit" class="{{#if isLiked}}btn-liked{{else}}btn-like{{/if}}">
+        {{#if isLiked}}♥{{else}}♡{{/if}} {{likeCount}}
+      </button>
+    </form>
+    <form action="/posts/{{postID}}/bookmark" method="post" class="inline-form">
+      <input type="hidden" name="returnTo" value="{{returnTo}}">
+      <button type="submit" class="{{#if isBookmarked}}btn-bookmarked{{else}}btn-bookmark{{/if}}">
+        {{#if isBookmarked}}★ Bookmarked{{else}}☆ Bookmark{{/if}}
+      </button>
+    </form>
+    <form action="/posts/{{postID}}/repost" method="post" class="inline-form">
+      <input type="hidden" name="returnTo" value="{{returnTo}}">
+      <button type="submit" class="{{#if isReposted}}btn-reposted{{else}}btn-repost{{/if}}">
+        {{#if isReposted}}↻ Reposted{{else}}↻ Repost{{/if}}
+      </button>
+    </form>
+    {{#if isOwnPost}}
+      <form action="/posts/{{postID}}/delete" method="post" class="inline-form">
+        <input type="hidden" name="returnTo" value="{{returnTo}}">
+        <button type="submit" class="btn-delete-post">Delete</button>
+      </form>
+    {{/if}}
+  </div>
+
+  <div class="post-comments">
+    {{#each comments}}
+      <div class="comment">
+        <a href="/profile/{{authorID}}">{{authorUsername}}</a>: {{content}}
+        {{#if isOwnComment}}
+          <form action="/posts/{{../postID}}/comments/delete" method="post" class="inline-form">
+            <input type="hidden" name="createdAt" value="{{createdAtISO}}">
+            <input type="hidden" name="returnTo" value="{{../returnTo}}">
+            <button type="submit" class="btn-delete-comment">×</button>
+          </form>
+        {{/if}}
+      </div>
+    {{/each}}
+    <form action="/posts/{{postID}}/comments" method="post" class="comment-form">
+      <input type="hidden" name="returnTo" value="{{returnTo}}">
+      <input type="text" name="content" placeholder="Write a comment..." required>
+      <button type="submit">Comment</button>
+    </form>
+  </div>
+</div>

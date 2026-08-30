@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+  {{> navbar}}
+
+  <h2>Moderating: {{name}}</h2>
+  <p><a href="/communities/{{communityID}}">← Back to board</a></p>
+  {{#if viewerIsGeneralMod}}<p class="admin-note">You are here as a platform moderator.</p>{{/if}}
+
+  <h3>Members ({{memberCount}})</h3>
+  <table>
+    <tr><th>User</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+    {{#each members}}
+      <tr>
+        <td><a href="/profile/{{userID}}">{{username}}</a></td>
+        <td>{{role}}</td>
+        <td>{{status}}</td>
+        <td>
+          {{#if canModerate}}
+            {{#if isBanned}}
+              <form action="/communities/{{../communityID}}/members/{{userID}}/unban" method="post" class="inline-form">
+                <button type="submit">Unban</button>
+              </form>
+            {{else}}
+              <form action="/communities/{{../communityID}}/members/{{userID}}/kick" method="post" class="inline-form">
+                <button type="submit">Kick</button>
+              </form>
+              <form action="/communities/{{../communityID}}/members/{{userID}}/ban" method="post" class="inline-form">
+                <button type="submit" class="btn-delete-post">Ban</button>
+              </form>
+              {{#if isModerator}}
+                <form action="/communities/{{../communityID}}/members/{{userID}}/demote" method="post" class="inline-form">
+                  <button type="submit">Demote</button>
+                </form>
+              {{else}}
+                <form action="/communities/{{../communityID}}/members/{{userID}}/promote" method="post" class="inline-form">
+                  <button type="submit">Promote</button>
+                </form>
+              {{/if}}
+            {{/if}}
+          {{/if}}
+        </td>
+      </tr>
+    {{/each}}
+  </table>
+
+  <h3>Posts in this community</h3>
+  {{#each posts}}
+    <div class="mod-post-row">
+      {{> post this returnTo=../returnTo}}
+      <form action="/communities/{{../communityID}}/posts/{{postID}}/delete" method="post">
+        <button type="submit" class="btn-delete-post">Remove as moderator</button>
+      </form>
+    </div>
+  {{/each}}
+
+  <h3 class="danger">Delete this community</h3>
+  <p>This permanently deletes the community and every post in it.</p>
+  <form action="/communities/{{communityID}}/delete" method="post">
+    <input type="text" name="confirmName" placeholder='Type "{{name}}" to confirm' required>
+    <button type="submit" class="btn-delete-post">Delete community</button>
+  </form>
+</div>
+
+</body>
+</html>

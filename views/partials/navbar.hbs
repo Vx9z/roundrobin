@@ -1,0 +1,10 @@
+<p class="nav-links">
+  <a href="/feed">Feed</a> |
+  <a href="/suggested">Suggested</a> |
+  <a href="/communities">Communities</a> |
+  <a href="/bookmarks">Bookmarks</a> |
+  <a href="/notifications">Notifications{{#if unreadCount}} <span class="badge">{{unreadCount}}</span>{{/if}}</a> |
+  <a href="/search">Search</a> |
+  <a href="/profile/{{navUserID}}">My Profile</a>
+  {{#if isGeneralMod}} | <a href="/admin/dashboard" class="admin-link">Admin</a>{{/if}}
+</p>

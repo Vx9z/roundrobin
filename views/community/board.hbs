@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body>
+<div class="feed-container">
+  {{> navbar}}
+
+  {{#if bannerURL}}
+    <img src="{{bannerURL}}" class="community-banner">
+  {{/if}}
+
+  <h2>{{name}}</h2>
+  {{#if description}}<p class="community-description">{{description}}</p>{{/if}}
+  <p class="community-meta">{{memberCount}} members</p>
+
+  <p class="community-actions">
+    {{#if isBanned}}
+      <span class="banned-label">You are banned from this community</span>
+    {{else if isMember}}
+      <form action="/communities/{{communityID}}/leave" method="post" class="inline-form">
+        <button type="submit">Leave</button>
+      </form>
+    {{else}}
+      <form action="/communities/{{communityID}}/join" method="post" class="inline-form">
+        <button type="submit">Join</button>
+      </form>
+    {{/if}}
+    {{#if isMod}}
+      <a href="/communities/{{communityID}}/dashboard" class="mod-dashboard-link">Moderator dashboard</a>
+    {{/if}}
+  </p>
+
+  <p class="refresh-link"><a href="/communities/{{communityID}}">↻ Refresh</a></p>
+
+  {{#if isMember}}
+    <form action="/posts" method="post" enctype="multipart/form-data" class="post-form">
+      <input type="hidden" name="communityID" value="{{communityID}}">
+      <textarea name="content" placeholder="Post to {{name}}..."></textarea><br>
+      <input type="file" name="media"><br>
+      <button type="submit">Post</button>
+    </form>
+  {{/if}}
+
+  <div class="post-list">
+    {{#if posts.length}}
+      {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
+    {{else}}
+      <p>No posts yet in this community.</p>
+    {{/if}}
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,17 +1,8 @@
 const User = require("../models/user");
 const UserRelationship = require("../models/userRelationships");
-const jwt = require("jsonwebtoken");
-
-function getCurrentUserID(req) {
-  const token = req.cookies?.token;
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, "SECRET_KEY");
-    return decoded.id;
-  } catch {
-    return null;
-  }
-}
+const { getCurrentUserID } = require("../middleware/auth");
+const { getProfilePosts } = require("./postController");
+const { createNotification } = require("./notificationController");
 
 exports.searchUsers = async (req, res) => {
   try {
@@ -72,6 +63,8 @@ exports.viewProfile = async (req, res) => {
       }
     }
 
+    const posts = await getProfilePosts(user.userID, currentUserID);
+
     res.render("user/profile", {
       title: "User Profile",
       userID: user.userID,
@@ -81,7 +74,9 @@ exports.viewProfile = async (req, res) => {
       profileOwner: currentUserID === user.userID,
       isBlocked: !!blocked,
       isFollowing: !!following,
-      friendsList
+      friendsList,
+      posts,
+      returnTo: `/profile/${user.userID}`
     });
   } catch (err) {
     res.status(500).send("Error loading profile: " + err.message);
@@ -98,6 +93,10 @@ exports.followUser = async (req, res) => {
       followerID: currentUserID,
       followingID: req.params.id,
       type: "follow"
+    });
+    await createNotification({
+      recipientID: req.params.id, actorID: currentUserID,
+      type: "follow", entityType: "user", entityID: currentUserID
     });
     res.redirect(`/profile/${req.params.id}`);
   } catch (err) {

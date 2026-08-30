@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed.css">
+</head>
+<body>
+<div class="feed-container">
+  {{> navbar}}
+
+  <h2>Home Feed</h2>
+
+  <p class="refresh-link"><a href="/feed">↻ Refresh</a></p>
+
+  <form action="/posts" method="post" enctype="multipart/form-data" class="post-form">
+    <textarea name="content" placeholder="What's happening?"></textarea><br>
+    <input type="file" name="media"><br>
+    <button type="submit">Post</button>
+  </form>
+
+  <div class="post-list">
+    {{#if posts.length}}
+      {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
+    {{else}}
+      <p>No posts yet. Follow some users or create your first post!</p>
+    {{/if}}
+  </div>
+</div>
+
+</body>
+</html>

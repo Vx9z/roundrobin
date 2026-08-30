@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed.css">
+</head>
+<body>
+<div class="feed-container">
+  {{> navbar}}
+
+  <h2>Suggested Posts</h2>
+
+  <p class="refresh-link"><a href="/suggested">↻ Refresh</a></p>
+
+  <div class="post-list">
+    {{#if posts.length}}
+      {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
+    {{else}}
+      <p>Nothing new to suggest right now.</p>
+    {{/if}}
+  </div>
+</div>
+
+</body>
+</html>

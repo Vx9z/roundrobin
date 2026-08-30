@@ -1,0 +1,24 @@
+.feed-container { max-width: 600px; margin: 30px auto; padding: 20px; }
+.nav-links { margin-bottom: 15px; }
+.post-form { border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-bottom: 20px; background: #f9f9f9; }
+.post-form textarea { width: 100%; min-height: 60px; }
+
+.post-card { border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-bottom: 15px; background: #fff; }
+.post-author { font-weight: bold; margin-bottom: 5px; }
+.repost-tag { font-weight: normal; color: #666; font-size: 0.85em; margin-left: 8px; }
+.post-date { font-weight: normal; color: #999; font-size: 0.85em; float: right; }
+.post-content { margin: 8px 0; }
+.post-media { max-width: 100%; border-radius: 8px; margin-bottom: 8px; }
+
+.post-actions { display: flex; gap: 8px; margin: 10px 0; }
+.inline-form { display: inline-block; }
+.post-actions button { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; background: #eee; }
+.btn-liked { background: #ffd9e0; }
+.btn-bookmarked { background: #fff3cd; }
+.btn-reposted { background: #d4edda; }
+.btn-delete-post, .btn-delete-comment { background: #f8d7da; color: #721c24; }
+
+.post-comments { border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
+.comment { font-size: 0.9em; margin-bottom: 6px; }
+.comment-form { margin-top: 8px; display: flex; gap: 6px; }
+.comment-form input[type="text"] { flex: 1; padding: 6px; }
