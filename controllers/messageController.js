@@ -7,6 +7,7 @@ const { getCurrentUserID } = require("../middleware/auth");
 const { isBlockedBetween } = require("../middleware/permissions");
 const { getFriends, areMutualFollows } = require("./userController");
 const { createNotification } = require("./notificationController");
+const { getAIResponse, AI_BOT_USER_ID } = require("../config/ollama");
 
 function dmKeyFor(userA, userB) {
   return [String(userA).toLowerCase(), String(userB).toLowerCase()].sort().join(":");
@@ -15,6 +16,43 @@ function dmKeyFor(userA, userB) {
 async function requireParticipant(conversationID, userID) {
   const participant = await ConversationParticipant.findOne({ where: { conversationID, userID } });
   return !!participant;
+}
+
+// Asks Ollama for a reply and inserts it as a message from the bot, then
+// pushes it through the same socket room a human's message would use. A
+// failed Ollama call (server down, model not pulled, timeout) still
+// produces a real message the user can see, rather than silence.
+async function generateAIReply(conversationID, io) {
+  const history = await Message.findAll({
+    where: { conversationID },
+    order: [["createdAt", "DESC"]],
+    limit: 20
+  });
+  const chatMessages = history.reverse().map(m => ({
+    role: m.senderID === AI_BOT_USER_ID ? "assistant" : "user",
+    content: m.content
+  }));
+
+  let replyContent;
+  try {
+    replyContent = await getAIResponse(chatMessages);
+  } catch (err) {
+    console.error("Ollama call failed:", err.message);
+    replyContent = "Sorry, I'm having trouble responding right now. Please try again in a moment.";
+  }
+
+  const reply = await Message.create({ conversationID, senderID: AI_BOT_USER_ID, content: replyContent });
+
+  if (io) {
+    io.to(`conversation:${conversationID}`).emit("new-message", {
+      conversationID,
+      messageID: reply.messageID,
+      senderID: AI_BOT_USER_ID,
+      senderUsername: "AI Assistant",
+      content: reply.content,
+      createdAtDisplay: reply.createdAt.toLocaleString()
+    });
+  }
 }
 
 exports.showInbox = async (req, res) => {
@@ -108,6 +146,35 @@ exports.startDM = async (req, res) => {
     res.redirect(`/messages/${conversation.conversationID}`);
   } catch (err) {
     res.status(500).send("Error starting conversation: " + err.message);
+  }
+};
+
+// Same find-or-create-by-dmKey shape as startDM, but WITHOUT the friend/block
+// gates -- the AI bot isn't a peer relationship. Redirects into the same
+// showThread every other DM uses; nothing about the thread view needs to
+// know this conversation is special.
+exports.showAIChat = async (req, res) => {
+  try {
+    const currentUserID = getCurrentUserID(req);
+    if (!currentUserID) return res.redirect("/login");
+
+    const dmKey = dmKeyFor(currentUserID, AI_BOT_USER_ID);
+    let conversation = await Conversation.findOne({ where: { dmKey } });
+
+    if (!conversation) {
+      try {
+        conversation = await Conversation.create({ type: "dm", name: null, dmKey, createdBy: currentUserID });
+        await ConversationParticipant.create({ conversationID: conversation.conversationID, userID: currentUserID });
+        await ConversationParticipant.create({ conversationID: conversation.conversationID, userID: AI_BOT_USER_ID });
+      } catch (err) {
+        conversation = await Conversation.findOne({ where: { dmKey } });
+        if (!conversation) throw err;
+      }
+    }
+
+    res.redirect(`/messages/${conversation.conversationID}`);
+  } catch (err) {
+    res.status(500).send("Error starting AI chat: " + err.message);
   }
 };
 
@@ -249,6 +316,7 @@ exports.sendMessage = async (req, res) => {
     const message = await Message.create({ conversationID, senderID: currentUserID, content });
 
     for (const p of otherParticipants) {
+      if (p.userID === AI_BOT_USER_ID) continue; // the bot never reads notifications
       await createNotification({
         recipientID: p.userID, actorID: currentUserID,
         type: "message", entityType: "conversation", entityID: conversationID,
@@ -256,8 +324,9 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
+    const io = req.app.get("io");
+
     try {
-      const io = req.app.get("io");
       if (io) {
         const sender = await User.findByPk(currentUserID);
         io.to(`conversation:${conversationID}`).emit("new-message", {
@@ -271,6 +340,13 @@ exports.sendMessage = async (req, res) => {
       }
     } catch (err) {
       console.error("socket emit failed:", err.message); // best-effort, never breaks the POST
+    }
+
+    // Not awaited: the redirect below must not wait on a local model
+    // generation. The reply arrives later purely through the same socket.io
+    // push used above, whenever it's ready.
+    if (conversation.type === "dm" && otherParticipants[0] && otherParticipants[0].userID === AI_BOT_USER_ID) {
+      generateAIReply(conversationID, io).catch(err => console.error("AI reply failed:", err.message));
     }
 
     res.redirect(`/messages/${conversationID}`);

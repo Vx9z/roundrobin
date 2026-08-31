@@ -4,6 +4,7 @@ const { getCurrentUserID } = require("../middleware/auth");
 const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
 const { hasReported } = require("./reportController");
+const { AI_BOT_USER_ID } = require("../config/ollama");
 
 // Mutual follows ("friends"): people this user follows who follow back.
 // Returns plain objects [{ userID, username }].
@@ -41,8 +42,8 @@ exports.searchUsers = async (req, res) => {
     const currentUserID = getCurrentUserID(req);
     if (!currentUserID) return res.redirect("/login");
 
-    // Fetch all users
-    const users = await User.findAll();
+    // Fetch all users (excluding the AI bot -- it's reached via the "AI Chat" nav link, not search)
+    const users = (await User.findAll()).filter(u => u.userID !== AI_BOT_USER_ID);
 
     // Convert Sequelize instances to plain objects
     const plainUsers = users.map(u => u.get({ plain: true }));
