@@ -18,6 +18,8 @@ const Post = sequelize.define("Post", {
   },
   content: DataTypes.TEXT,
   mediaURL: DataTypes.TEXT,
+  codeContent: DataTypes.TEXT,
+  codeLanguage: DataTypes.STRING,
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

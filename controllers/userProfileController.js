@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const UserProfile = require("../models/userProfile");
 const { getCurrentUserID } = require("../middleware/auth");
+const { THEMES, isValidThemeID } = require("../config/themes");
 
 exports.editProfile = async (req, res) => {
   const currentUserID = getCurrentUserID(req);
@@ -13,6 +14,8 @@ exports.editProfile = async (req, res) => {
   });
   if (!user) return res.redirect("/search");
 
+  const activeThemeID = user.Profile?.themeID ?? 0;
+
   res.render("user/editProfile", {
     title: "Edit Profile",
     userID: user.userID,
@@ -20,35 +23,58 @@ exports.editProfile = async (req, res) => {
     email: user.email,
     bio: user.Profile?.bio,
     avatarURL: user.Profile?.avatarURL,
-    bannerURL: user.Profile?.bannerURL
+    bannerURL: user.Profile?.bannerURL,
+    backgroundURL: user.Profile?.backgroundURL,
+    // Handlebars has no equality helper (app.js registers only isVideoURL),
+    // so the selected flag is resolved here rather than in the template.
+    themes: THEMES.map(t => ({ ...t, selected: t.id === activeThemeID }))
   });
 };
 
 exports.updateProfile = async (req, res) => {
-  const currentUserID = getCurrentUserID(req);
-  if (!currentUserID) return res.redirect("/login");
+  try {
+    const currentUserID = getCurrentUserID(req);
+    if (!currentUserID) return res.redirect("/login");
 
-  const { username, email, bio } = req.body;
-  let avatarURL = null;
-  let bannerURL = null;
+    const { username, email, bio, themeID, removeAvatar, removeBanner, removeBackground } = req.body;
 
-  if (req.files?.avatar) {
-    avatarURL = "/uploads/" + req.files.avatar[0].filename;
+    // BUG FIX: the payload is built CONDITIONALLY. The previous version always
+    // sent avatarURL/bannerURL and let them default to null when no file was
+    // attached, so any save that did not re-upload a picture wrote NULL over
+    // the stored URL and silently wiped it. A field that was not re-uploaded
+    // this request must not appear in the payload at all.
+    const payload = { bio };
+
+    if (isValidThemeID(themeID)) payload.themeID = Number(themeID);
+
+    // A newly-uploaded file always wins over a stale checked "remove" box.
+    // Removing here only clears the DB pointer, not the file on disk --
+    // same precedent as deletePost, which never cleans up /uploads either.
+    if (req.files?.avatar?.[0]) payload.avatarURL = "/uploads/" + req.files.avatar[0].filename;
+    else if (removeAvatar) payload.avatarURL = null;
+
+    if (req.files?.banner?.[0]) payload.bannerURL = "/uploads/" + req.files.banner[0].filename;
+    else if (removeBanner) payload.bannerURL = null;
+
+    if (req.files?.background?.[0]) payload.backgroundURL = "/uploads/" + req.files.background[0].filename;
+    else if (removeBackground) payload.backgroundURL = null;
+
+    // Update Users table for identity
+    await User.update({ username, email }, { where: { userID: currentUserID } });
+
+    // findOrCreate + instance.update instead of upsert. upsert() rebuilds the
+    // whole model instance, which drags every column that has a defaultValue
+    // (themeID, privacyLevel, notificationEnabled) into the write -- so an
+    // upsert could reset a suspended/private account's flags as a side effect
+    // of editing a bio. instance.update() writes only the keys handed to it.
+    const [profile] = await UserProfile.findOrCreate({
+      where: { userID: currentUserID },
+      defaults: { userID: currentUserID }
+    });
+    await profile.update(payload);
+
+    res.redirect(`/profile/${currentUserID}`);
+  } catch (err) {
+    res.status(500).send("Error updating profile: " + err.message);
   }
-  if (req.files?.banner) {
-    bannerURL = "/uploads/" + req.files.banner[0].filename;
-  }
-
-  // Update Users table for identity
-  await User.update({ username, email }, { where: { userID: currentUserID } });
-
-  // Update or insert into userProfile for personalization
-  await UserProfile.upsert({
-    userID: currentUserID,
-    bio,
-    avatarURL,
-    bannerURL
-  });
-
-  res.redirect(`/profile/${currentUserID}`);
 };

@@ -12,6 +12,7 @@ const UserProfile = sequelize.define("UserProfile", {
   bio: DataTypes.TEXT,
   avatarURL: DataTypes.TEXT,
   bannerURL: DataTypes.TEXT,
+  backgroundURL: DataTypes.TEXT,
   themeID: { type: DataTypes.INTEGER, defaultValue: 0 },
   privacyLevel: { type: DataTypes.STRING, defaultValue: "public" },
   notificationEnabled: { type: DataTypes.BOOLEAN, defaultValue: true },

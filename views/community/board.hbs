@@ -45,11 +45,22 @@
   <p class="refresh-link"><a href="/communities/{{communityID}}">↻ Refresh</a></p>
 
   {{#if isMember}}
-    <form action="/posts" method="post" enctype="multipart/form-data" class="post-form">
+    <form action="/posts" method="post" enctype="multipart/form-data"
+          class="mb-5 rounded-xl border border-base-content/10 bg-base-200 p-4">
       <input type="hidden" name="communityID" value="{{communityID}}">
-      <textarea name="content" placeholder="Post to {{name}}..."></textarea><br>
-      <input type="file" name="media"><br>
-      <button type="submit">Post</button>
+      <textarea name="content" placeholder="Post to {{name}}..." class="d-textarea w-full"></textarea>
+      <div class="mt-2 flex items-center gap-2">
+        <input type="file" name="media" class="d-file-input d-file-input-sm">
+        <button type="button" class="d-btn d-btn-sm d-btn-ghost" data-code-toggle="#compose-code-panel">&lt;/&gt; Code</button>
+        <button type="submit" class="d-btn d-btn-sm d-btn-primary ml-auto">Post</button>
+      </div>
+      <div id="compose-code-panel" class="hidden mt-3 rounded-lg border border-base-content/10 bg-base-100 p-3">
+        <select name="codeLanguage" class="d-select d-select-sm">
+          {{#each codeLanguages}}<option value="{{this.id}}">{{this.label}}</option>{{/each}}
+        </select>
+        <textarea name="codeContent" placeholder="Paste code here..." rows="6"
+                  class="d-textarea mt-2 w-full font-mono text-sm"></textarea>
+      </div>
     </form>
   {{/if}}
 
@@ -62,5 +73,7 @@
   </div>
 </div>
 
+<script src="/js/compose-code-toggle.js"></script>
+<script src="/js/code-copy.js"></script>
 </body>
 </html>

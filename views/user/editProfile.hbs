@@ -20,19 +20,41 @@
     <label>Bio:</label>
     <textarea name="bio">{{bio}}</textarea><br>
 
+    <label>Theme:</label>
+    <select name="themeID" class="d-select">
+      {{#each themes}}
+        <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+      {{/each}}
+    </select><br>
+
     <label>Profile Picture:</label>
     {{#if avatarURL}}
       <img src="{{avatarURL}}" class="avatar-preview">
+      <label class="d-label inline-flex items-center gap-1">
+        <input type="checkbox" name="removeAvatar" value="1" class="d-checkbox d-checkbox-sm"> Remove
+      </label>
     {{/if}}
-    <input type="file" name="avatar"><br>
+    <input type="file" name="avatar" class="d-file-input d-file-input-sm"><br>
 
     <label>Banner:</label>
     {{#if bannerURL}}
       <img src="{{bannerURL}}" class="banner-preview">
+      <label class="d-label inline-flex items-center gap-1">
+        <input type="checkbox" name="removeBanner" value="1" class="d-checkbox d-checkbox-sm"> Remove
+      </label>
     {{/if}}
-    <input type="file" name="banner"><br>
+    <input type="file" name="banner" class="d-file-input d-file-input-sm"><br>
 
-    <button type="submit" class="btn-edit">Save Changes</button>
+    <label>Profile Background:</label>
+    {{#if backgroundURL}}
+      <img src="{{backgroundURL}}" class="banner-preview">
+      <label class="d-label inline-flex items-center gap-1">
+        <input type="checkbox" name="removeBackground" value="1" class="d-checkbox d-checkbox-sm"> Remove
+      </label>
+    {{/if}}
+    <input type="file" name="background" class="d-file-input d-file-input-sm"><br>
+
+    <button type="submit" class="d-btn d-btn-primary">Save Changes</button>
   </form>
 
   <p><a href="/profile/{{userID}}" class="back-link">← Back to Profile</a></p>

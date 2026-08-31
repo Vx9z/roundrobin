@@ -1,0 +1,101 @@
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+/* Preflight intentionally OMITTED: the ~10 existing hand-written stylesheets
+   rely on browser default margins/list markers/button styling. Importing it
+   would silently restyle every existing page. */
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "../views";
+@source "../public/js";
+
+/* prefix:"d-" is load-bearing, not decorative -- 4 real class-name collisions
+   exist between this app's existing CSS and real daisyUI 5 component classes
+   (avatar, avatar-placeholder, badge, stat-value all appear literally in
+   .hbs sources today), and daisyUI would win layout-affecting properties
+   the legacy rules never set. The prefix makes collision structurally
+   impossible without touching a single existing class name. It does NOT
+   prefix Tailwind utilities (bg-base-100, backdrop-blur-xl stay unprefixed). */
+@plugin "daisyui" {
+  themes: light --default, dark;
+  prefix: "d-";
+}
+
+/* VSCode Dark+ inspired: #1e1e1e editor bg, #569cd6 keyword blue,
+   #4ec9b0 type teal, #c586c0 control pink, translated to oklch with a
+   faint cool-blue cast on the greys. Tight radii, flat depth -- VSCode's
+   own chrome is square and flat. */
+@plugin "daisyui/theme" {
+  name: "vscode-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: oklch(23% 0.008 265);
+  --color-base-200: oklch(27% 0.008 265);
+  --color-base-300: oklch(33% 0.009 265);
+  --color-base-content: oklch(87% 0.005 265);
+  --color-primary: oklch(65% 0.110 250);
+  --color-primary-content: oklch(20% 0.020 250);
+  --color-secondary: oklch(68% 0.100 330);
+  --color-secondary-content: oklch(20% 0.020 330);
+  --color-accent: oklch(76% 0.100 175);
+  --color-accent-content: oklch(20% 0.030 175);
+  --color-neutral: oklch(35% 0.006 265);
+  --color-neutral-content: oklch(88% 0.005 265);
+  --color-error: oklch(64% 0.210 25);
+  --color-error-content: oklch(97% 0.010 25);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.375rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* Anime pastel inspired: soft sakura pink / lavender / sky, plum-toned text
+   instead of black so nothing reads harsh. High lightness, low chroma
+   throughout; generous radii and depth:1 for the soft rounded look. */
+@plugin "daisyui/theme" {
+  name: "anime-pastel";
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: oklch(97% 0.015 320);
+  --color-base-200: oklch(94% 0.025 320);
+  --color-base-300: oklch(90% 0.035 315);
+  --color-base-content: oklch(35% 0.060 315);
+  --color-primary: oklch(78% 0.120 350);
+  --color-primary-content: oklch(28% 0.050 350);
+  --color-secondary: oklch(80% 0.100 295);
+  --color-secondary-content: oklch(28% 0.050 295);
+  --color-accent: oklch(84% 0.090 200);
+  --color-accent-content: oklch(28% 0.040 200);
+  --color-neutral: oklch(55% 0.050 310);
+  --color-neutral-content: oklch(98% 0.010 310);
+  --color-error: oklch(76% 0.140 20);
+  --color-error-content: oklch(25% 0.050 20);
+  --radius-selector: 2rem;
+  --radius-field: 1rem;
+  --radius-box: 1.5rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* highlight.js token colors, keyed to daisyUI's own CSS custom properties
+   instead of one of hljs's bundled static theme files -- var(--color-*) is
+   redefined per data-theme, so the same rules adapt automatically across all
+   4 site themes instead of clashing with 3 of them. Not exhaustive against
+   every hljs token class that exists (~40+ across all grammars); covers the
+   ones the 13 whitelisted compose-panel languages actually emit. Anything
+   uncovered just inherits --color-base-content, never unstyled/broken. */
+@layer components {
+  .hljs { background: var(--color-base-300); color: var(--color-base-content); }
+  .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--color-secondary); }
+  .hljs-string, .hljs-attr, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition { color: var(--color-accent); }
+  .hljs-comment, .hljs-quote, .hljs-deletion { color: var(--color-base-content); opacity: .55; font-style: italic; }
+  .hljs-number, .hljs-built_in, .hljs-builtin-name, .hljs-type { color: var(--color-primary); }
+  .hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--color-primary); font-weight: 600; }
+  .hljs-params, .hljs-variable, .hljs-template-variable { color: var(--color-base-content); }
+  .hljs-meta, .hljs-doctag { color: var(--color-neutral-content); opacity: .7; }
+  .hljs-emphasis { font-style: italic; }
+  .hljs-strong { font-weight: 700; }
+}

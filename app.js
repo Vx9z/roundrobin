@@ -27,6 +27,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // serve uploaded files
+// anime.js ships a prebuilt UMD bundle; serve it from node_modules the same
+// way socket.io serves its own client at /socket.io/socket.io.js. Self-hosted,
+// no CDN, and no second committed copy of the file under public/.
+app.use("/vendor/animejs", express.static(path.join(__dirname, "node_modules/animejs/dist/bundles")));
 app.use(cookieParser());
 
 // Sets res.locals.navUserID / unreadCount / isGeneralMod for the shared navbar.

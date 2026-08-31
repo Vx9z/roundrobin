@@ -6,7 +6,7 @@ const userProfileController = require("../controllers/userProfileController");
 router.get("/profile/:id/edit", userProfileController.editProfile);
 router.post(
   "/profile/:id/edit",
-  upload.fields([{ name: "avatar" }, { name: "banner" }]),
+  upload.fields([{ name: "avatar" }, { name: "banner" }, { name: "background" }]),
   userProfileController.updateProfile
 );
 

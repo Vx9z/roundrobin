@@ -1,75 +1,92 @@
-<div class="post-card">
-  <p class="post-author">
-    <a href="/profile/{{authorID}}">{{authorUsername}}</a>
+<div class="post-card mb-4 rounded-xl border border-base-content/10 bg-base-100 p-4 text-base-content">
+  <p class="post-author mb-1 flex flex-wrap items-baseline gap-x-2">
+    <a href="/profile/{{authorID}}" class="font-bold hover:underline">{{authorUsername}}</a>
     {{#if repostedByUsername}}
-      <span class="repost-tag">↻ Reposted by {{repostedByUsername}}</span>
+      <span class="repost-tag text-xs opacity-60">↻ Reposted by {{repostedByUsername}}</span>
     {{/if}}
-    <span class="post-date">{{createdAtDisplay}}</span>
+    <span class="post-date ml-auto text-xs opacity-50">{{createdAtDisplay}}</span>
   </p>
 
-  {{#if content}}<p class="post-content">{{content}}</p>{{/if}}
+  {{#if content}}<p class="post-content whitespace-pre-wrap break-words">{{content}}</p>{{/if}}
 
   {{#if mediaURL}}
     {{#if (isVideoURL mediaURL)}}
-      <video src="{{mediaURL}}" controls class="post-media"></video>
+      <video src="{{mediaURL}}" controls class="post-media mt-2 max-w-full rounded-lg"></video>
     {{else}}
-      <img src="{{mediaURL}}" class="post-media">
+      <img src="{{mediaURL}}" class="post-media mt-2 max-w-full rounded-lg">
     {{/if}}
   {{/if}}
 
-  <div class="post-actions">
+  {{!-- codeHTML is precomputed server-side by highlightCode() (postController.js),
+        which HTML-escapes the source text before/while tokenizing -- safe to
+        triple-stash here for the same reason profile background images render as
+        <img src> rather than inline CSS: only the SAFE TRANSFORM's output is ever
+        rendered unescaped, never the raw user string. --}}
+  {{#if codeHTML}}
+    <div class="code-block-wrapper relative mt-2">
+      {{#if codeLanguageLabel}}
+        <span class="code-lang-badge absolute right-2 top-2 text-xs opacity-60">{{codeLanguageLabel}}</span>
+      {{/if}}
+      <button type="button" class="copy-code-btn d-btn d-btn-xs d-btn-ghost absolute bottom-2 right-2">Copy</button>
+      <pre class="hljs overflow-x-auto rounded-lg p-4 pb-10 text-sm font-mono"><code>{{{codeHTML}}}</code></pre>
+    </div>
+  {{/if}}
+
+  <div class="post-actions mt-3 flex flex-wrap items-center gap-2">
     <form action="/posts/{{postID}}/like" method="post" class="inline-form">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
-      <button type="submit" class="{{#if isLiked}}btn-liked{{else}}btn-like{{/if}}">
+      <button type="submit" class="d-btn d-btn-sm {{#if isLiked}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isLiked}}♥{{else}}♡{{/if}} {{likeCount}}
       </button>
     </form>
     <form action="/posts/{{postID}}/bookmark" method="post" class="inline-form">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
-      <button type="submit" class="{{#if isBookmarked}}btn-bookmarked{{else}}btn-bookmark{{/if}}">
+      <button type="submit" class="d-btn d-btn-sm {{#if isBookmarked}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isBookmarked}}★ Bookmarked{{else}}☆ Bookmark{{/if}}
       </button>
     </form>
     <form action="/posts/{{postID}}/repost" method="post" class="inline-form">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
-      <button type="submit" class="{{#if isReposted}}btn-reposted{{else}}btn-repost{{/if}}">
+      <button type="submit" class="d-btn d-btn-sm {{#if isReposted}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isReposted}}↻ Reposted{{else}}↻ Repost{{/if}}
       </button>
     </form>
     {{#if isOwnPost}}
-      <form action="/posts/{{postID}}/delete" method="post" class="inline-form">
+      <form action="/posts/{{postID}}/delete" method="post" class="inline-form ml-auto">
         <input type="hidden" name="returnTo" value="{{returnTo}}">
-        <button type="submit" class="btn-delete-post">Delete</button>
+        <button type="submit" class="d-btn d-btn-sm d-btn-error d-btn-outline">Delete</button>
       </form>
     {{else}}
       {{#if isReportedByMe}}
-        <button type="button" class="btn-reported" disabled>⚑ Reported</button>
+        <button type="button" class="d-btn d-btn-sm d-btn-ghost ml-auto" disabled>⚑ Reported</button>
       {{else}}
-        <form action="/posts/{{postID}}/report" method="post" class="inline-form">
+        <form action="/posts/{{postID}}/report" method="post" class="inline-form ml-auto">
           <input type="hidden" name="returnTo" value="{{returnTo}}">
-          <button type="submit" class="btn-report">⚑ Report</button>
+          <button type="submit" class="d-btn d-btn-sm d-btn-warning d-btn-outline">⚑ Report</button>
         </form>
       {{/if}}
     {{/if}}
   </div>
 
-  <div class="post-comments">
+  <div class="post-comments mt-3 border-t border-base-content/10 pt-3">
     {{#each comments}}
-      <div class="comment">
-        <a href="/profile/{{authorID}}">{{authorUsername}}</a>: {{content}}
+      <div class="comment mb-1.5 flex items-start gap-1 text-sm">
+        <p class="flex-1 whitespace-pre-wrap break-words">
+          <a href="/profile/{{authorID}}" class="font-semibold hover:underline">{{authorUsername}}</a>: {{content}}
+        </p>
         {{#if isOwnComment}}
           <form action="/posts/{{../postID}}/comments/delete" method="post" class="inline-form">
             <input type="hidden" name="createdAt" value="{{createdAtISO}}">
             <input type="hidden" name="returnTo" value="{{../returnTo}}">
-            <button type="submit" class="btn-delete-comment">×</button>
+            <button type="submit" class="d-btn d-btn-xs d-btn-ghost">×</button>
           </form>
         {{/if}}
       </div>
     {{/each}}
-    <form action="/posts/{{postID}}/comments" method="post" class="comment-form">
+    <form action="/posts/{{postID}}/comments" method="post" class="comment-form mt-2 flex gap-2">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
-      <input type="text" name="content" placeholder="Write a comment..." required>
-      <button type="submit">Comment</button>
+      <input type="text" name="content" placeholder="Write a comment..." required class="d-input d-input-sm flex-1">
+      <button type="submit" class="d-btn d-btn-sm d-btn-primary">Comment</button>
     </form>
   </div>
 </div>

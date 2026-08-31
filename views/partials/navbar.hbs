@@ -1,12 +1,16 @@
-<p class="nav-links">
-  <a href="/feed">Feed</a> |
-  <a href="/suggested">Suggested</a> |
-  <a href="/communities">Communities</a> |
-  <a href="/bookmarks">Bookmarks</a> |
-  <a href="/messages">Messages</a> |
-  <a href="/ai-chat">AI Chat</a> |
-  <a href="/notifications">Notifications{{#if unreadCount}} <span class="badge">{{unreadCount}}</span>{{/if}}</a> |
-  <a href="/search">Search</a> |
-  <a href="/profile/{{navUserID}}">My Profile</a>
-  {{#if isGeneralMod}} | <a href="/admin/dashboard" class="admin-link">Admin</a>{{/if}}
-</p>
+<nav class="nav-links mb-4 flex flex-wrap items-center gap-1 border-b border-base-content/10 pb-3">
+  <a href="/feed" class="d-btn d-btn-sm d-btn-ghost">Feed</a>
+  <a href="/suggested" class="d-btn d-btn-sm d-btn-ghost">Suggested</a>
+  <a href="/communities" class="d-btn d-btn-sm d-btn-ghost">Communities</a>
+  <a href="/bookmarks" class="d-btn d-btn-sm d-btn-ghost">Bookmarks</a>
+  <a href="/messages" class="d-btn d-btn-sm d-btn-ghost">Messages</a>
+  <a href="/ai-chat" class="d-btn d-btn-sm d-btn-ghost">AI Chat</a>
+  <a href="/notifications" class="d-btn d-btn-sm d-btn-ghost">
+    Notifications{{#if unreadCount}} <span class="d-badge d-badge-error d-badge-sm">{{unreadCount}}</span>{{/if}}
+  </a>
+  <a href="/search" class="d-btn d-btn-sm d-btn-ghost">Search</a>
+  <a href="/profile/{{navUserID}}" class="d-btn d-btn-sm d-btn-ghost">My Profile</a>
+  {{#if isGeneralMod}}
+    <a href="/admin/dashboard" class="d-btn d-btn-sm d-btn-error d-btn-outline ml-auto">Admin</a>
+  {{/if}}
+</nav>

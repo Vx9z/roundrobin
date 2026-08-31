@@ -6,6 +6,7 @@ const { isCommunityMod } = require("../middleware/permissions");
 const { createNotification } = require("./notificationController");
 const { hydratePost } = require("./postController");
 const { hasReported } = require("./reportController");
+const { CODE_LANGUAGES } = require("../config/codeLanguages");
 
 exports.listCommunities = async (req, res) => {
   try {
@@ -100,7 +101,8 @@ exports.showCommunity = async (req, res) => {
       isMod,
       isReportedByMe,
       returnTo: `/communities/${community.communityID}`,
-      posts
+      posts,
+      codeLanguages: CODE_LANGUAGES
     });
   } catch (err) {
     res.status(500).send("Error loading community: " + err.message);

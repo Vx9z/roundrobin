@@ -1,5 +1,12 @@
 <link rel="stylesheet" href="/css/login.css">
 
+{{!-- Per-letter spans so anime.js can stagger them. aria-label carries the
+      real word for screen readers; the spans are decorative. --}}
+<h1 id="wordmark" class="mb-8 text-5xl font-bold tracking-tight text-primary"
+    aria-label="roundrobin">
+  <span class="letter inline-block opacity-0" aria-hidden="true">r</span><span class="letter inline-block opacity-0" aria-hidden="true">o</span><span class="letter inline-block opacity-0" aria-hidden="true">u</span><span class="letter inline-block opacity-0" aria-hidden="true">n</span><span class="letter inline-block opacity-0" aria-hidden="true">d</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">r</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">o</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">b</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">i</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">n</span>
+</h1>
+
 <h2>Login</h2>
 {{#if error}}<p class="error">{{error}}</p>{{/if}}
 <form class="login-form" action="/auth/login" method="POST">
@@ -9,3 +16,6 @@
   <p>Don't have an account? <a href="/register">Register here</a></p>
 
 </form>
+
+<script src="/vendor/animejs/anime.umd.min.js"></script>
+<script src="/js/login-animation.js"></script>

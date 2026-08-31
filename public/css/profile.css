@@ -7,33 +7,10 @@
   background: #f9f9f9;
 }
 
-button {
-  margin: 5px;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-edit {
-  background-color: #0078d7;
-  color: white;
-}
-
-.btn-follow {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-unfollow {
-  background-color: #ffc107;
-  color: black;
-}
-
-.btn-block {
-  background-color: #dc3545;
-  color: white;
-}
+/* .btn-follow/.btn-unfollow/.btn-block and the old bare `button {}` reset
+   are gone -- profile.hbs's action row now uses d-btn variants (theme-
+   adaptive via daisyUI's CSS vars), and editProfile.hbs's one remaining
+   plain button (Save Changes) does too, so nothing here needs them anymore. */
 
 .avatar {
   width: 120px;

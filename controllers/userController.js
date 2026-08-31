@@ -1,10 +1,12 @@
 const User = require("../models/user");
+const UserProfile = require("../models/userProfile");
 const UserRelationship = require("../models/userRelationships");
 const { getCurrentUserID } = require("../middleware/auth");
 const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
 const { hasReported } = require("./reportController");
 const { AI_BOT_USER_ID } = require("../config/ollama");
+const { themeNameFor } = require("../config/themes");
 
 // Mutual follows ("friends"): people this user follows who follow back.
 // Returns plain objects [{ userID, username }].
@@ -64,7 +66,14 @@ exports.viewProfile = async (req, res) => {
     const currentUserID = getCurrentUserID(req);
     if (!currentUserID) return res.redirect("/login");
 
-    const user = await User.findByPk(req.params.id);
+    // BUG FIX: this was a bare User.findByPk with no include, so Profile was
+    // always undefined and the view unconditionally fell through to the
+    // "No Picture" placeholder and hid the bio -- even though both were
+    // stored correctly (editProfile has always read them via this same
+    // include). Nothing was wrong with the data; the read was.
+    const user = await User.findByPk(req.params.id, {
+      include: [{ model: UserProfile, as: "Profile" }]
+    });
     if (!user) return res.redirect("/search");
 
     // Check if profile owner blocked current user
@@ -92,6 +101,13 @@ exports.viewProfile = async (req, res) => {
       username: user.username,
       email: user.email,
       clearanceLevel: user.clearanceLevel,
+      bio: user.Profile?.bio,
+      avatarURL: user.Profile?.avatarURL,
+      bannerURL: user.Profile?.bannerURL,
+      backgroundURL: user.Profile?.backgroundURL,
+      // The OWNER's theme, scoped to their profile card only. The rest of the
+      // page (and <html>) stays on the VIEWER's theme from navContext.
+      profileTheme: themeNameFor(user.Profile?.themeID),
       profileOwner: currentUserID === user.userID,
       isBlocked: !!blocked,
       isFollowing: !!following,

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict HUnYAPzrZ10oQstdj5uh5qPtj34MVXYID3QD1LEH38RvZqcwfCRmN7fTjX6psXJ
+\restrict SLuVP3ZPTO6V0pdWmOhCUS37Q60yq4YuhO93szuiKp5ysj4XSFIojFvRRlL1WFo
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -169,6 +169,8 @@ CREATE TABLE public.posts (
     content text,
     mediaurl text,
     createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    codecontent text,
+    codelanguage text,
     CONSTRAINT community_optional CHECK (((communityid IS NULL) OR (communityid IS NOT NULL)))
 );
 
@@ -232,7 +234,8 @@ CREATE TABLE public.userprofile (
     bannerurl text,
     isdeleted boolean,
     deletedat timestamp without time zone,
-    lastarchive timestamp without time zone
+    lastarchive timestamp without time zone,
+    backgroundurl text
 );
 
 
@@ -667,5 +670,5 @@ ALTER TABLE ONLY public.userrelationships
 -- PostgreSQL database dump complete
 --
 
-\unrestrict HUnYAPzrZ10oQstdj5uh5qPtj34MVXYID3QD1LEH38RvZqcwfCRmN7fTjX6psXJ
+\unrestrict SLuVP3ZPTO6V0pdWmOhCUS37Q60yq4YuhO93szuiKp5ysj4XSFIojFvRRlL1WFo
 

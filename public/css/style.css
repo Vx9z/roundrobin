@@ -1,11 +1,18 @@
 body { font-family: Arial; text-align: center; margin-top: 50px; }
-form { display: inline-block; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-input, button { margin: 10px; padding: 8px; width: 200px; }
-button { background: #0078d7; color: white; border: none; border-radius: 5px; }
 
-.nav-links { margin-bottom: 15px; }
-.badge { background: #d9534f; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.8em; }
-.admin-link { color: #b00; font-weight: bold; }
+/* Scoped to .login-form (both login.hbs and register.hbs carry this class on
+   their <form>) -- this used to be bare `form`/`input,button`/`button` tag
+   selectors, which leaked a boxed gray-panel look onto every form on every
+   page site-wide, since .inline-form (feed.css) only ever set
+   display:inline-block and never cancelled it. That's very plausibly what
+   "ugly buttons" meant concretely: every post-action mini-form and the
+   comment form were rendering inside a bordered, padded gray box. */
+.login-form { display: inline-block; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+.login-form input, .login-form button { margin: 10px; padding: 8px; width: 200px; }
+.login-form button { background: #0078d7; color: white; border: none; border-radius: 5px; }
+
 .refresh-link { margin-bottom: 10px; }
+/* Still used by community/board.hbs's community-level report button
+   (out of scope this pass -- board.hbs's own header controls aren't touched). */
 .btn-report { background: #eee; color: #444; }
 .btn-reported { background: #eee; color: #999; cursor: default; }

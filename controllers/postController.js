@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const hljs = require("highlight.js/lib/core");
 const Post = require("../models/post");
 const User = require("../models/user");
 const Comment = require("../models/comment");
@@ -9,6 +10,47 @@ const UserRelationship = require("../models/userRelationships");
 const CommunityMember = require("../models/communityMember");
 const { getCurrentUserID } = require("../middleware/auth");
 const { hasReported } = require("./reportController");
+const { CODE_LANGUAGES, isValidLanguage } = require("../config/codeLanguages");
+
+// Only the languages actually offered in the compose dropdown get registered --
+// avoids pulling in all ~190 grammars the full "highlight.js" package ships.
+hljs.registerLanguage("javascript", require("highlight.js/lib/languages/javascript"));
+hljs.registerLanguage("typescript", require("highlight.js/lib/languages/typescript"));
+hljs.registerLanguage("python", require("highlight.js/lib/languages/python"));
+hljs.registerLanguage("java", require("highlight.js/lib/languages/java"));
+hljs.registerLanguage("c", require("highlight.js/lib/languages/c"));
+hljs.registerLanguage("cpp", require("highlight.js/lib/languages/cpp"));
+hljs.registerLanguage("csharp", require("highlight.js/lib/languages/csharp"));
+hljs.registerLanguage("go", require("highlight.js/lib/languages/go"));
+hljs.registerLanguage("sql", require("highlight.js/lib/languages/sql"));
+hljs.registerLanguage("bash", require("highlight.js/lib/languages/bash"));
+hljs.registerLanguage("json", require("highlight.js/lib/languages/json"));
+hljs.registerLanguage("html", require("highlight.js/lib/languages/xml")); // xml.js covers html
+hljs.registerLanguage("css", require("highlight.js/lib/languages/css"));
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// Re-validates at READ time, not just write time (config/codeLanguages.js's
+// list could theoretically change after a post was written). ignoreIllegals
+// because we're force-highlighting arbitrary user text against a possibly-
+// mismatched language choice -- hljs throws by default on grammar mismatches,
+// which would otherwise take down an entire list page since hydratePost runs
+// inside Promise.all for every post in it. try/catch is defense in depth
+// beyond that: a bad snippet must never break the page, worst case it just
+// renders unhighlighted.
+function highlightCode(code, language) {
+  if (!code) return null;
+  const lang = isValidLanguage(language) ? language : "plaintext";
+  if (lang === "plaintext") return escapeHtml(code);
+  try {
+    return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+  } catch (err) {
+    return escapeHtml(code);
+  }
+}
 
 async function hydratePost(post, currentUserID) {
   const author = await User.findByPk(post.authorID);
@@ -33,6 +75,10 @@ async function hydratePost(post, currentUserID) {
     postID: post.postID,
     content: post.content,
     mediaURL: post.mediaURL,
+    codeContent: post.codeContent,
+    codeLanguage: post.codeLanguage,
+    codeHTML: highlightCode(post.codeContent, post.codeLanguage),
+    codeLanguageLabel: (CODE_LANGUAGES.find(l => l.id === post.codeLanguage) || {}).label,
     createdAtDisplay: post.createdAt.toLocaleString(),
     authorID: post.authorID,
     authorUsername: author ? author.username : "[deleted]",
@@ -116,7 +162,7 @@ exports.showFeed = async (req, res) => {
 
     const posts = await exports.getFeedPosts(currentUserID);
     const trending = await exports.getTrendingHashtags();
-    res.render("feed", { title: "Home Feed", currentUserID, returnTo: "/feed", posts, trending });
+    res.render("feed", { title: "Home Feed", currentUserID, returnTo: "/feed", posts, trending, codeLanguages: CODE_LANGUAGES });
   } catch (err) {
     res.status(500).send("Error loading feed: " + err.message);
   }
@@ -127,10 +173,14 @@ exports.createPost = async (req, res) => {
     const currentUserID = getCurrentUserID(req);
     if (!currentUserID) return res.redirect("/login");
 
-    const { content, communityID } = req.body;
+    const { content, communityID, codeContent, codeLanguage } = req.body;
     const mediaURL = req.file ? "/uploads/" + req.file.filename : null;
     const returnTo = communityID ? `/communities/${communityID}` : "/feed";
-    if (!content && !mediaURL) return res.redirect(returnTo);
+
+    const trimmedCode = codeContent && codeContent.trim() ? codeContent : null;
+    const finalCodeLanguage = trimmedCode ? (isValidLanguage(codeLanguage) ? codeLanguage : "plaintext") : null;
+
+    if (!content && !mediaURL && !trimmedCode) return res.redirect(returnTo);
 
     // Posting into a community requires an active (non-banned) membership.
     if (communityID) {
@@ -140,7 +190,11 @@ exports.createPost = async (req, res) => {
       if (!membership) return res.redirect(returnTo);
     }
 
-    await Post.create({ authorID: currentUserID, content, mediaURL, communityID: communityID || null });
+    await Post.create({
+      authorID: currentUserID, content, mediaURL,
+      codeContent: trimmedCode, codeLanguage: finalCodeLanguage,
+      communityID: communityID || null
+    });
     res.redirect(returnTo);
   } catch (err) {
     res.status(500).send("Error creating post: " + err.message);

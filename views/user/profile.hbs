@@ -7,76 +7,104 @@
   <link rel="stylesheet" href="/css/feed.css">
 </head>
 <body>
-<div class="profile-container">
-  {{#if bannerURL}}
-    <img src="{{bannerURL}}" class="banner">
+{{> navbar}}
+
+{{!-- data-theme here (not on <html>) scopes the PROFILE OWNER's palette to
+      their own card, the way an artist page carries its own colors, while the
+      surrounding chrome stays on the viewer's theme from navContext. --}}
+<div class="relative isolate min-h-screen text-left" data-theme="{{profileTheme}}">
+
+  {{#if backgroundURL}}
+    {{!-- Rendered as an <img>, not a CSS background-image: the URL is
+          user-controlled and Handlebars does not escape ")" or ";", so
+          interpolating it into url() would be a CSS-injection vector. --}}
+    <img src="{{backgroundURL}}" alt=""
+         class="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover">
+    {{!-- Scrim: the image stays sharp behind the gaps, but text never sits on
+          raw photo. Gradient rather than flat so the top edge stays vivid. --}}
+    <div class="pointer-events-none fixed inset-0 z-0
+                bg-gradient-to-b from-base-100/40 via-base-100/65 to-base-100/90"></div>
   {{/if}}
 
-  {{#if avatarURL}}
-    <img src="{{avatarURL}}" class="avatar">
-  {{else}}
-    <div class="avatar-placeholder">No Picture</div>
-  {{/if}}
+  <div class="relative z-10 mx-auto max-w-3xl px-4 py-10">
 
-  <h2>Welcome, {{username}}</h2>
-  <p>Email: {{email}}</p>
-  <p>Clearance Level: {{clearanceLevel}}</p>
-
-  {{#if bio}}
-    <p class="bio">{{bio}}</p>
-  {{/if}}
-
-  {{#if profileOwner}}
-    <form action="/profile/{{userID}}/edit" method="get">
-      <button type="submit" class="btn-edit">Edit Profile</button>
-    </form>
-    <p><a href="/profile/{{userID}}/edit" class="edit-link">Go to Edit Profile</a></p>
-
-    <h3>Friends</h3>
-    <ul>
-      {{#each friendsList}}
-        <li><a href="/profile/{{this.userID}}">{{this.username}}</a></li>
-      {{/each}}
-    </ul>
-  {{else}}
-    {{#if isBlocked}}
-      <p>You are blocked from viewing this profile.</p>
-    {{else}}
-      {{#if isFollowing}}
-        <form action="/profile/{{userID}}/unfollow" method="post">
-          <button type="submit" class="btn-unfollow">Unfollow</button>
-        </form>
-      {{else}}
-        <form action="/profile/{{userID}}/follow" method="post">
-          <button type="submit" class="btn-follow">Follow</button>
-        </form>
+    <div class="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100/60
+                shadow-2xl backdrop-blur-xl backdrop-saturate-150 text-base-content">
+      {{#if bannerURL}}
+        <img src="{{bannerURL}}" alt="" class="h-40 w-full object-cover">
       {{/if}}
-      <form action="/profile/{{userID}}/block" method="post">
-        <button type="submit" class="btn-block">Block</button>
-      </form>
-    {{/if}}
-    {{#if isReportedByMe}}
-      <button type="button" class="btn-reported" disabled>⚑ Reported</button>
-    {{else}}
-      <form action="/profile/{{userID}}/report" method="post">
-        <button type="submit" class="btn-report">⚑ Report user</button>
-      </form>
-    {{/if}}
-  {{/if}}
 
-  {{> navbar}}
+      <div class="p-6">
+        {{#if avatarURL}}
+          <img src="{{avatarURL}}" class="avatar">
+        {{else}}
+          <div class="avatar-placeholder">No Picture</div>
+        {{/if}}
 
-  <h3>Posts</h3>
-  <div class="post-list">
-    {{#if posts.length}}
-      {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
-    {{else}}
-      <p>No posts yet.</p>
-    {{/if}}
+        <h2 class="text-2xl font-bold">Welcome, {{username}}</h2>
+        <p class="opacity-70">Email: {{email}}</p>
+        <p class="opacity-70">Clearance Level: {{clearanceLevel}}</p>
+
+        {{#if bio}}
+          <p class="bio mt-3">{{bio}}</p>
+        {{/if}}
+
+        <div class="mt-4">
+        {{#if profileOwner}}
+          <p><a href="/profile/{{userID}}/edit" class="d-btn d-btn-sm d-btn-outline">Edit Profile</a></p>
+
+          <h3 class="mt-4 font-semibold">Friends</h3>
+          <ul>
+            {{#each friendsList}}
+              <li><a href="/profile/{{this.userID}}" class="d-link d-link-hover">{{this.username}}</a></li>
+            {{/each}}
+          </ul>
+        {{else}}
+          <div class="flex flex-wrap items-center gap-2">
+          {{#if isBlocked}}
+            <p>You are blocked from viewing this profile.</p>
+          {{else}}
+            {{#if isFollowing}}
+              <form action="/profile/{{userID}}/unfollow" method="post" class="inline-form">
+                <button type="submit" class="d-btn d-btn-sm d-btn-ghost">Unfollow</button>
+              </form>
+            {{else}}
+              <form action="/profile/{{userID}}/follow" method="post" class="inline-form">
+                <button type="submit" class="d-btn d-btn-sm d-btn-primary">Follow</button>
+              </form>
+            {{/if}}
+            <form action="/profile/{{userID}}/block" method="post" class="inline-form">
+              <button type="submit" class="d-btn d-btn-sm d-btn-error d-btn-outline">Block</button>
+            </form>
+          {{/if}}
+          {{#if isReportedByMe}}
+            <button type="button" class="d-btn d-btn-sm d-btn-ghost" disabled>⚑ Reported</button>
+          {{else}}
+            <form action="/profile/{{userID}}/report" method="post" class="inline-form">
+              <button type="submit" class="d-btn d-btn-sm d-btn-warning d-btn-outline">⚑ Report user</button>
+            </form>
+          {{/if}}
+          </div>
+        {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-base-content/10 bg-base-100/60 p-6
+                shadow-2xl backdrop-blur-xl backdrop-saturate-150 text-base-content">
+      <h3 class="mb-3 text-xl font-semibold">Posts</h3>
+      <div class="post-list">
+        {{#if posts.length}}
+          {{#each posts}}{{> post this returnTo=../returnTo}}{{/each}}
+        {{else}}
+          <p>No posts yet.</p>
+        {{/if}}
+      </div>
+    </div>
+
+    <p class="mt-6"><a href="/search" class="back-link">&larr; Back to Search</a></p>
   </div>
-
-  <p><a href="/search" class="back-link">← Back to Search</a></p>
 </div>
-
+<script src="/js/code-copy.js"></script>
 </body>
 </html>

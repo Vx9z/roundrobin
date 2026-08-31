@@ -1,3 +1,10 @@
+{{!-- Per-letter spans so anime.js can stagger them. aria-label carries the
+      real word for screen readers; the spans are decorative. --}}
+<h1 id="wordmark" class="mb-8 text-5xl font-bold tracking-tight text-primary"
+    aria-label="roundrobin">
+  <span class="letter inline-block opacity-0" aria-hidden="true">r</span><span class="letter inline-block opacity-0" aria-hidden="true">o</span><span class="letter inline-block opacity-0" aria-hidden="true">u</span><span class="letter inline-block opacity-0" aria-hidden="true">n</span><span class="letter inline-block opacity-0" aria-hidden="true">d</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">r</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">o</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">b</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">i</span><span class="letter inline-block opacity-0 text-secondary" aria-hidden="true">n</span>
+</h1>
+
 <h2>Register</h2>
 {{#if error}}
   <p style="color:red">{{error}}</p>
@@ -6,10 +13,13 @@
   <p style="color:green">{{success}}</p>
 {{/if}}
 
-<form action="/auth/register" method="POST">
+<form class="login-form" action="/auth/register" method="POST">
   <input type="text" name="username" placeholder="Username" required><br>
   <input type="email" name="email" placeholder="Email (optional)"><br>
   <input type="password" name="password" placeholder="Password" required><br>
   <button type="submit">Register</button>
   <p>Already have an account? <a href="/login">Login here</a></p>
 </form>
+
+<script src="/vendor/animejs/anime.umd.min.js"></script>
+<script src="/js/login-animation.js"></script>
