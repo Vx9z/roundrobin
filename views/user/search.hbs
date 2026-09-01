@@ -1,11 +1,27 @@
 {{> navbar}}
 
-<h2>Search Users</h2>
-<ul>
-  {{#each users}}
-    <li><a href="/profile/{{this.userID}}">{{this.username}}</a></li>
-  {{/each}}
-</ul>
+<div class="mx-auto max-w-md px-4">
+  <h2 class="mb-4 text-center text-2xl font-bold">Search Users</h2>
 
-<!-- Navigation back to your own profile -->
-<p><a href="/profile/{{currentUserID}}" class="back-link">← Back to My Profile</a></p>
+  <form action="/search" method="get" class="mb-4">
+    <input type="text" name="q" id="searchInput" value="{{q}}" placeholder="Search by username..."
+           autocomplete="off" class="d-input w-full text-left">
+  </form>
+
+  <ul id="searchResults" class="space-y-2">
+    {{#each users}}
+      <li>
+        <a href="/profile/{{userID}}" class="flex items-center gap-2 no-underline hover:opacity-80">
+          <img src="{{avatarURL}}" alt="" class="h-9 w-9 rounded-full object-cover">
+          <span class="font-semibold">{{username}}</span>
+        </a>
+      </li>
+    {{else}}
+      <li class="text-center opacity-60">{{#if q}}No users found.{{else}}Type a username to search.{{/if}}</li>
+    {{/each}}
+  </ul>
+
+  <p class="mt-6 text-center"><a href="/profile/{{currentUserID}}" class="back-link">← Back to My Profile</a></p>
+</div>
+
+<script src="/js/live-search.js"></script>

@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const User = require("../models/user");
 const UserProfile = require("../models/userProfile");
 const UserRelationship = require("../models/userRelationships");
@@ -39,23 +40,36 @@ async function areMutualFollows(userA, userB) {
 }
 exports.areMutualFollows = areMutualFollows;
 
+// Top 10 username matches, case-insensitive substring, excluding the AI bot
+// (it's reached via the "AI Chat" nav link, not search). Same ILIKE-as-a-
+// pre-filter approach postController's hashtag search already uses -- fine
+// for this app's scale, would need a real search index well before it isn't.
+async function findMatchingUsers(q) {
+  const matches = await User.findAll({
+    where: { username: { [Op.iLike]: `%${q}%` }, userID: { [Op.ne]: AI_BOT_USER_ID } },
+    include: [{ model: UserProfile, as: "Profile" }],
+    order: [["username", "ASC"]],
+    limit: 10
+  });
+  return matches.map(u => ({
+    userID: u.userID,
+    username: u.username,
+    avatarURL: avatarURLFor(u.Profile?.avatarURL)
+  }));
+}
+
 exports.searchUsers = async (req, res) => {
   try {
     const currentUserID = getCurrentUserID(req);
     if (!currentUserID) return res.redirect("/login");
 
-    // Fetch all users (excluding the AI bot -- it's reached via the "AI Chat" nav link, not search)
-    const users = (await User.findAll()).filter(u => u.userID !== AI_BOT_USER_ID);
+    const q = (req.query.q || "").trim();
+    const users = q ? await findMatchingUsers(q) : [];
 
-    // Convert Sequelize instances to plain objects
-    const plainUsers = users.map(u => u.get({ plain: true }));
-
-    res.render("user/search", { 
-      title: "Search Users", 
-      users: plainUsers,   // ✅ now Handlebars can iterate
-      currentUserID
-    });
+    if (req.xhr) return res.json({ users });
+    res.render("user/search", { title: "Search Users", currentUserID, q, users });
   } catch (err) {
+    if (req.xhr) return res.status(500).json({ error: err.message });
     res.status(500).send("Error fetching users: " + err.message);
   }
 };
