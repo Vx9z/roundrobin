@@ -9,6 +9,21 @@
 @source "../views";
 @source "../public/js";
 
+/* Preflight normally sets box-sizing:border-box globally; since it's
+   omitted here (see above), daisyUI's form-control components default to
+   the browser's content-box, so a 100%-wide .d-textarea/.d-input/etc. adds
+   its own padding+border ON TOP of that 100% -- overflowing its container
+   by exactly that amount. Confirmed by measurement: a .d-textarea rendered
+   9px past its card's right edge before this rule. Scoped to daisyUI's own
+   classes (never used on the untouched legacy pages) rather than a global
+   reset, so this can't change how login/register or any other
+   not-yet-migrated page renders. */
+@layer base {
+  .d-textarea, .d-input, .d-select, .d-file-input {
+    box-sizing: border-box;
+  }
+}
+
 /* prefix:"d-" is load-bearing, not decorative -- 4 real class-name collisions
    exist between this app's existing CSS and real daisyUI 5 component classes
    (avatar, avatar-placeholder, badge, stat-value all appear literally in
@@ -21,10 +36,15 @@
   prefix: "d-";
 }
 
-/* VSCode Dark+ inspired: #1e1e1e editor bg, #569cd6 keyword blue,
-   #4ec9b0 type teal, #c586c0 control pink, translated to oklch with a
-   faint cool-blue cast on the greys. Tight radii, flat depth -- VSCode's
-   own chrome is square and flat. */
+/* VSCode Dark+ inspired: #1e1e1e editor bg, translated to oklch with a
+   faint cool-blue cast on the greys (unchanged -- that's genuinely how the
+   real editor chrome looks, not tinted). Primary swapped from the original
+   keyword-blue to a terminal/git green -- this is a coder-focused platform,
+   green reads as "go/success/prompt" the way it does in every dev tool, and
+   it's now the site DEFAULT (see config/themes.js + db/set-default-theme.sql),
+   not just an opt-in palette. Accent moved to the old primary's blue so it
+   doesn't collide hue-wise with the new green primary. Tight radii, flat
+   depth -- VSCode's own chrome is square and flat. */
 @plugin "daisyui/theme" {
   name: "vscode-dark";
   prefersdark: true;
@@ -33,12 +53,12 @@
   --color-base-200: oklch(27% 0.008 265);
   --color-base-300: oklch(33% 0.009 265);
   --color-base-content: oklch(87% 0.005 265);
-  --color-primary: oklch(65% 0.110 250);
-  --color-primary-content: oklch(20% 0.020 250);
+  --color-primary: oklch(66% 0.155 150);
+  --color-primary-content: oklch(18% 0.030 150);
   --color-secondary: oklch(68% 0.100 330);
   --color-secondary-content: oklch(20% 0.020 330);
-  --color-accent: oklch(76% 0.100 175);
-  --color-accent-content: oklch(20% 0.030 175);
+  --color-accent: oklch(72% 0.110 230);
+  --color-accent-content: oklch(18% 0.030 230);
   --color-neutral: oklch(35% 0.006 265);
   --color-neutral-content: oklch(88% 0.005 265);
   --color-error: oklch(64% 0.210 25);

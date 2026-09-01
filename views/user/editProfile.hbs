@@ -28,8 +28,8 @@
     </select><br>
 
     <label>Profile Picture:</label>
-    {{#if avatarURL}}
-      <img src="{{avatarURL}}" class="avatar-preview">
+    <img src="{{avatarURL}}" alt="" class="avatar-preview">
+    {{#if hasCustomAvatar}}
       <label class="d-label inline-flex items-center gap-1">
         <input type="checkbox" name="removeAvatar" value="1" class="d-checkbox d-checkbox-sm"> Remove
       </label>

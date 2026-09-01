@@ -1,7 +1,8 @@
 const User = require("../models/user");
 const UserProfile = require("../models/userProfile");
 const { getCurrentUserID } = require("../middleware/auth");
-const { THEMES, isValidThemeID } = require("../config/themes");
+const { THEMES, DEFAULT_THEME, isValidThemeID } = require("../config/themes");
+const { avatarURLFor } = require("../config/avatar");
 
 exports.editProfile = async (req, res) => {
   const currentUserID = getCurrentUserID(req);
@@ -14,7 +15,12 @@ exports.editProfile = async (req, res) => {
   });
   if (!user) return res.redirect("/search");
 
-  const activeThemeID = user.Profile?.themeID ?? 0;
+  // Matches themeNameFor's own fallback (config/themes.js) -- a user with no
+  // themeID stored isn't necessarily "on theme 0", they're on whatever the
+  // site default actually resolves to, which is DEFAULT_THEME, not a
+  // hardcoded id. Otherwise this dropdown would show "Light" selected for
+  // someone who is actually seeing vscode-dark.
+  const activeThemeID = user.Profile?.themeID ?? DEFAULT_THEME.id;
 
   res.render("user/editProfile", {
     title: "Edit Profile",
@@ -22,7 +28,8 @@ exports.editProfile = async (req, res) => {
     username: user.username,
     email: user.email,
     bio: user.Profile?.bio,
-    avatarURL: user.Profile?.avatarURL,
+    avatarURL: avatarURLFor(user.Profile?.avatarURL),
+    hasCustomAvatar: !!user.Profile?.avatarURL,
     bannerURL: user.Profile?.bannerURL,
     backgroundURL: user.Profile?.backgroundURL,
     // Handlebars has no equality helper (app.js registers only isVideoURL),

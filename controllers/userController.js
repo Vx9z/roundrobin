@@ -6,6 +6,7 @@ const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
 const { hasReported } = require("./reportController");
 const { AI_BOT_USER_ID } = require("../config/ollama");
+const { avatarURLFor } = require("../config/avatar");
 
 // Mutual follows ("friends"): people this user follows who follow back.
 // Returns plain objects [{ userID, username }].
@@ -101,7 +102,7 @@ exports.viewProfile = async (req, res) => {
       email: user.email,
       clearanceLevel: user.clearanceLevel,
       bio: user.Profile?.bio,
-      avatarURL: user.Profile?.avatarURL,
+      avatarURL: avatarURLFor(user.Profile?.avatarURL),
       bannerURL: user.Profile?.bannerURL,
       backgroundURL: user.Profile?.backgroundURL,
       profileOwner: currentUserID === user.userID,

@@ -16,7 +16,8 @@
   <div class="mt-4 rounded-2xl border border-base-content/10 bg-base-100 p-4 text-base-content">
     <h3 class="mb-3 text-lg font-semibold">Comments ({{comments.length}})</h3>
     {{#each comments}}
-      <div class="comment mb-1.5 flex items-start gap-1 text-sm">
+      <div class="comment mb-1.5 flex items-start gap-2 text-sm">
+        <img src="{{authorAvatarURL}}" alt="" class="h-6 w-6 flex-shrink-0 rounded-full object-cover">
         <p class="m-0 flex-1 whitespace-pre-wrap break-words text-left"><a href="/profile/{{authorID}}" class="font-semibold hover:underline">{{authorUsername}}</a>: {{content}}</p>
         {{#if isOwnComment}}
           <form action="/posts/{{../post.postID}}/comments/delete" method="post" class="inline-form" data-action="delete-comment">
@@ -38,5 +39,7 @@
 </div>
 <script src="/js/code-copy.js"></script>
 <script src="/js/post-actions.js"></script>
+<script src="/vendor/animejs/anime.umd.min.js"></script>
+<script src="/js/button-animations.js"></script>
 </body>
 </html>

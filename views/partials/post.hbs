@@ -1,5 +1,6 @@
 <div class="post-card mb-4 rounded-xl border border-base-content/10 bg-base-100 p-4 text-base-content" data-post-id="{{postID}}" data-return-to="{{returnTo}}">
-  <p class="post-author mb-1 flex flex-wrap items-baseline gap-x-2">
+  <p class="post-author mb-1 flex flex-wrap items-center gap-x-2">
+    <img src="{{authorAvatarURL}}" alt="" class="h-9 w-9 rounded-full object-cover">
     <a href="/profile/{{authorID}}" class="font-bold hover:underline">{{authorUsername}}</a>
     {{#if repostedByUsername}}
       <span class="repost-tag text-xs opacity-60">↻ Reposted by {{repostedByUsername}}</span>

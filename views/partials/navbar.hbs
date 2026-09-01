@@ -1,4 +1,8 @@
-<nav class="nav-links mb-4 flex flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap border-b border-base-content/10 pb-3">
+<a href="/feed" aria-label="roundrobin" class="mb-2 flex justify-center gap-0.5 text-2xl font-bold tracking-tight no-underline hover:opacity-80">
+  <span class="text-primary">round</span><span class="text-secondary">robin</span>
+</a>
+
+<nav class="nav-links mb-4 flex flex-wrap items-center justify-center gap-1 border-b border-base-content/10 pb-3">
   <a href="/feed" class="d-btn d-btn-sm d-btn-ghost no-underline">Feed</a>
   <a href="/suggested" class="d-btn d-btn-sm d-btn-ghost no-underline">Suggested</a>
   <a href="/communities" class="d-btn d-btn-sm d-btn-ghost no-underline">Communities</a>
@@ -11,6 +15,6 @@
   <a href="/search" class="d-btn d-btn-sm d-btn-ghost no-underline">Search</a>
   <a href="/profile/{{navUserID}}" class="d-btn d-btn-sm d-btn-ghost no-underline">My Profile</a>
   {{#if isGeneralMod}}
-    <a href="/admin/dashboard" class="d-btn d-btn-sm d-btn-error d-btn-outline no-underline ml-auto">Admin</a>
+    <a href="/admin/dashboard" class="d-btn d-btn-sm d-btn-error d-btn-outline no-underline">Admin</a>
   {{/if}}
 </nav>

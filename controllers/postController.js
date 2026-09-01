@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const hljs = require("highlight.js/lib/core");
 const Post = require("../models/post");
 const User = require("../models/user");
+const UserProfile = require("../models/userProfile");
 const Comment = require("../models/comment");
 const Reaction = require("../models/reaction");
 const Bookmark = require("../models/bookmark");
@@ -12,6 +13,7 @@ const { getCurrentUserID, requireAuthOrXhr } = require("../middleware/auth");
 const { hasReported } = require("./reportController");
 const { CODE_LANGUAGES, isValidLanguage } = require("../config/codeLanguages");
 const { getEmbedding } = require("../config/ollama");
+const { avatarURLFor } = require("../config/avatar");
 
 // Only the languages actually offered in the compose dropdown get registered --
 // avoids pulling in all ~190 grammars the full "highlight.js" package ships.
@@ -54,7 +56,7 @@ function highlightCode(code, language) {
 }
 
 async function hydratePost(post, currentUserID) {
-  const author = await User.findByPk(post.authorID);
+  const author = await User.findByPk(post.authorID, { include: [{ model: UserProfile, as: "Profile" }] });
 
   const commentCount = await Comment.count({ where: { postID: post.postID } });
   const likeCount = await Reaction.count({ where: { postID: post.postID, type: "like" } });
@@ -74,6 +76,7 @@ async function hydratePost(post, currentUserID) {
     createdAtDisplay: post.createdAt.toLocaleString(),
     authorID: post.authorID,
     authorUsername: author ? author.username : "[deleted]",
+    authorAvatarURL: avatarURLFor(author?.Profile?.avatarURL),
     isOwnPost: post.authorID === currentUserID,
     likeCount,
     isLiked,
@@ -91,12 +94,16 @@ exports.hydratePost = hydratePost;
 exports.getPostComments = async (postID, currentUserID) => {
   const comments = await Comment.findAll({ where: { postID }, order: [["createdAt", "ASC"]] });
   const authorIDs = [...new Set(comments.map(c => c.authorID))];
-  const authors = authorIDs.length ? await User.findAll({ where: { userID: authorIDs } }) : [];
+  const authors = authorIDs.length
+    ? await User.findAll({ where: { userID: authorIDs }, include: [{ model: UserProfile, as: "Profile" }] })
+    : [];
   const usernameByID = Object.fromEntries(authors.map(u => [u.userID, u.username]));
+  const avatarByID = Object.fromEntries(authors.map(u => [u.userID, avatarURLFor(u.Profile?.avatarURL)]));
 
   return comments.map(c => ({
     authorID: c.authorID,
     authorUsername: usernameByID[c.authorID] || "[deleted]",
+    authorAvatarURL: avatarByID[c.authorID] || avatarURLFor(null),
     content: c.content,
     createdAtDisplay: c.createdAt.toLocaleString(),
     createdAtISO: c.createdAt.toISOString(),

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict xeABP2Nj9QCWwpFAXHfaO6trLW3nu99A1WKZf5hN0qZ0dqy3RWtYF2TfEvxLv9E
+\restrict fUDysOsEifOhDsA7wy9zpfdVPpfpB7UKBV1e3HjfesutyCn6kAmXMQXa0PDhbhM
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -229,7 +229,7 @@ CREATE TABLE public.userprofile (
     userid uuid NOT NULL,
     bio text,
     avatarurl text,
-    themeid integer DEFAULT 0,
+    themeid integer DEFAULT 2,
     privacylevel character varying(20) DEFAULT 'public'::character varying,
     notificationenabled boolean DEFAULT true,
     bannerurl text,
@@ -671,5 +671,5 @@ ALTER TABLE ONLY public.userrelationships
 -- PostgreSQL database dump complete
 --
 
-\unrestrict xeABP2Nj9QCWwpFAXHfaO6trLW3nu99A1WKZf5hN0qZ0dqy3RWtYF2TfEvxLv9E
+\unrestrict fUDysOsEifOhDsA7wy9zpfdVPpfpB7UKBV1e3HjfesutyCn6kAmXMQXa0PDhbhM
 
