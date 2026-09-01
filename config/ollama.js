@@ -9,8 +9,13 @@ const SYSTEM_PROMPT = "You are a helpful, friendly AI assistant built into a soc
 // ragContext, if given, is a second system message injected after the base
 // prompt -- keeps retrieval-augmented context separate from the assistant's
 // core instructions rather than splicing it into one giant string.
+// format, if given, is passed straight through to Ollama (e.g. "json" to
+// force syntactically-valid JSON output) -- confirmed live against qwen2.5:3b
+// that this is honored reliably, though the model can still omit fields you
+// asked for even when the JSON itself is well-formed, so callers must not
+// trust any individual key's presence just because format:"json" was used.
 // Throws on any failure (network, timeout, non-2xx) -- the caller decides the fallback.
-async function getAIResponse(messages, ragContext) {
+async function getAIResponse(messages, ragContext, format) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60_000); // a hung local generation must not hang forever
 
@@ -24,7 +29,8 @@ async function getAIResponse(messages, ragContext) {
       body: JSON.stringify({
         model: MODEL_NAME,
         messages: [...systemMessages, ...messages],
-        stream: false
+        stream: false,
+        ...(format ? { format } : {})
       }),
       signal: controller.signal
     });
