@@ -5,13 +5,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-base-300);
   border-radius: 8px;
   padding: 10px 15px;
   margin-bottom: 8px;
-  background: #fff;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
 }
-.notification.unread { background: #eef6ff; border-color: #b9dcff; }
+.notification.unread {
+  background: color-mix(in oklch, var(--color-primary) 12%, var(--color-base-100));
+  border-color: var(--color-primary);
+}
 .notification .inline-form { display: inline; }
 .notification-link {
   background: none;
@@ -22,4 +26,4 @@
   cursor: pointer;
   text-align: left;
 }
-.notification-date { color: #999; font-size: 0.85em; white-space: nowrap; margin-left: 10px; }
+.notification-date { color: var(--color-base-content); opacity: .6; font-size: 0.85em; white-space: nowrap; margin-left: 10px; }

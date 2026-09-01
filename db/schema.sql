@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict SLuVP3ZPTO6V0pdWmOhCUS37Q60yq4YuhO93szuiKp5ysj4XSFIojFvRRlL1WFo
+\restrict xeABP2Nj9QCWwpFAXHfaO6trLW3nu99A1WKZf5hN0qZ0dqy3RWtYF2TfEvxLv9E
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -171,6 +171,7 @@ CREATE TABLE public.posts (
     createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     codecontent text,
     codelanguage text,
+    embedding jsonb,
     CONSTRAINT community_optional CHECK (((communityid IS NULL) OR (communityid IS NOT NULL)))
 );
 
@@ -670,5 +671,5 @@ ALTER TABLE ONLY public.userrelationships
 -- PostgreSQL database dump complete
 --
 
-\unrestrict SLuVP3ZPTO6V0pdWmOhCUS37Q60yq4YuhO93szuiKp5ysj4XSFIojFvRRlL1WFo
+\unrestrict xeABP2Nj9QCWwpFAXHfaO6trLW3nu99A1WKZf5hN0qZ0dqy3RWtYF2TfEvxLv9E
 

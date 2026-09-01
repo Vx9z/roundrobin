@@ -11,16 +11,16 @@
 
   <h2>New Message</h2>
 
-  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+  {{#if error}}<p class="form-error">{{error}}</p>{{/if}}
 
   {{#if friends.length}}
-    <form action="/messages/dm" method="post">
-      <select name="userID" required>
+    <form action="/messages/dm" method="post" class="flex items-center gap-2">
+      <select name="userID" required class="d-select">
         {{#each friends}}
           <option value="{{userID}}">{{username}}</option>
         {{/each}}
       </select>
-      <button type="submit">Start conversation</button>
+      <button type="submit" class="d-btn d-btn-primary">Start conversation</button>
     </form>
   {{else}}
     <p>You can only message friends (people you follow who follow you back).</p>

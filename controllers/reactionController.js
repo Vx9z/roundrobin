@@ -1,12 +1,12 @@
 const Reaction = require("../models/reaction");
 const Post = require("../models/post");
-const { getCurrentUserID } = require("../middleware/auth");
+const { requireAuthOrXhr } = require("../middleware/auth");
 const { createNotification } = require("./notificationController");
 
 exports.toggleLike = async (req, res) => {
   try {
-    const currentUserID = getCurrentUserID(req);
-    if (!currentUserID) return res.redirect("/login");
+    const currentUserID = requireAuthOrXhr(req, res);
+    if (!currentUserID) return;
 
     const existing = await Reaction.findOne({
       where: { postID: req.params.id, userID: currentUserID, type: "like" }
@@ -20,6 +20,11 @@ exports.toggleLike = async (req, res) => {
         recipientID: post.authorID, actorID: currentUserID,
         type: "like", entityType: "post", entityID: post.postID
       });
+    }
+
+    if (req.xhr) {
+      const likeCount = await Reaction.count({ where: { postID: req.params.id, type: "like" } });
+      return res.json({ isLiked: !existing, likeCount });
     }
     res.redirect(req.body.returnTo || "/feed");
   } catch (err) {

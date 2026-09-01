@@ -1,12 +1,12 @@
 const Repost = require("../models/repost");
 const Post = require("../models/post");
-const { getCurrentUserID } = require("../middleware/auth");
+const { requireAuthOrXhr } = require("../middleware/auth");
 const { createNotification } = require("./notificationController");
 
 exports.toggleRepost = async (req, res) => {
   try {
-    const currentUserID = getCurrentUserID(req);
-    if (!currentUserID) return res.redirect("/login");
+    const currentUserID = requireAuthOrXhr(req, res);
+    if (!currentUserID) return;
 
     const existing = await Repost.findOne({ where: { postID: req.params.id, userID: currentUserID } });
     if (existing) {
@@ -19,6 +19,8 @@ exports.toggleRepost = async (req, res) => {
         type: "repost", entityType: "post", entityID: post.postID
       });
     }
+
+    if (req.xhr) return res.json({ isReposted: !existing });
     res.redirect(req.body.returnTo || "/feed");
   } catch (err) {
     res.status(500).send("Error toggling repost: " + err.message);

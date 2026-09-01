@@ -1,5 +1,5 @@
 const Bookmark = require("../models/bookmark");
-const { getCurrentUserID } = require("../middleware/auth");
+const { getCurrentUserID, requireAuthOrXhr } = require("../middleware/auth");
 const { getBookmarkedPosts } = require("./postController");
 
 exports.showBookmarks = async (req, res) => {
@@ -16,8 +16,8 @@ exports.showBookmarks = async (req, res) => {
 
 exports.toggleBookmark = async (req, res) => {
   try {
-    const currentUserID = getCurrentUserID(req);
-    if (!currentUserID) return res.redirect("/login");
+    const currentUserID = requireAuthOrXhr(req, res);
+    if (!currentUserID) return;
 
     const existing = await Bookmark.findOne({ where: { postID: req.params.id, userID: currentUserID } });
     if (existing) {
@@ -25,6 +25,8 @@ exports.toggleBookmark = async (req, res) => {
     } else {
       await Bookmark.create({ postID: req.params.id, userID: currentUserID });
     }
+
+    if (req.xhr) return res.json({ isBookmarked: !existing });
     res.redirect(req.body.returnTo || "/feed");
   } catch (err) {
     res.status(500).send("Error toggling bookmark: " + err.message);

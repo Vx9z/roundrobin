@@ -8,7 +8,7 @@ li {
 }
 
 a {
-  color: #0078d7;
+  color: var(--color-primary);
   text-decoration: none;
 }
 

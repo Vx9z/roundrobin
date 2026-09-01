@@ -11,18 +11,18 @@
 
   <h2>New Group</h2>
 
-  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+  {{#if error}}<p class="form-error">{{error}}</p>{{/if}}
 
   <form action="/messages/groups" method="post">
     <label>Group name:</label>
-    <input type="text" name="name" required><br>
+    <input type="text" name="name" required class="d-input w-full"><br>
 
     <label>Members:</label>
     <div class="member-picker">
       {{#if friends.length}}
         {{#each friends}}
           <label class="member-option">
-            <input type="checkbox" name="memberIDs" value="{{userID}}"> {{username}}
+            <input type="checkbox" name="memberIDs" value="{{userID}}" class="d-checkbox d-checkbox-sm"> {{username}}
           </label>
         {{/each}}
       {{else}}
@@ -30,7 +30,7 @@
       {{/if}}
     </div>
 
-    <button type="submit">Create group</button>
+    <button type="submit" class="d-btn d-btn-primary">Create group</button>
   </form>
   <p class="hint">Members are fixed when the group is created and cannot be added later.</p>
 

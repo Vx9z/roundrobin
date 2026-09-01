@@ -33,26 +33,26 @@
   {{/if}}
 
   <div class="post-actions mt-3 flex flex-wrap items-center gap-2">
-    <form action="/posts/{{postID}}/like" method="post" class="inline-form">
+    <form action="/posts/{{postID}}/like" method="post" class="inline-form" data-action="like">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
       <button type="submit" class="d-btn d-btn-sm {{#if isLiked}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isLiked}}♥{{else}}♡{{/if}} {{likeCount}}
       </button>
     </form>
-    <form action="/posts/{{postID}}/bookmark" method="post" class="inline-form">
+    <form action="/posts/{{postID}}/bookmark" method="post" class="inline-form" data-action="bookmark">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
       <button type="submit" class="d-btn d-btn-sm {{#if isBookmarked}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isBookmarked}}★ Bookmarked{{else}}☆ Bookmark{{/if}}
       </button>
     </form>
-    <form action="/posts/{{postID}}/repost" method="post" class="inline-form">
+    <form action="/posts/{{postID}}/repost" method="post" class="inline-form" data-action="repost">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
       <button type="submit" class="d-btn d-btn-sm {{#if isReposted}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
         {{#if isReposted}}↻ Reposted{{else}}↻ Repost{{/if}}
       </button>
     </form>
     {{#if isOwnPost}}
-      <form action="/posts/{{postID}}/delete" method="post" class="inline-form ml-auto">
+      <form action="/posts/{{postID}}/delete" method="post" class="inline-form ml-auto" data-action="delete-post">
         <input type="hidden" name="returnTo" value="{{returnTo}}">
         <button type="submit" class="d-btn d-btn-sm d-btn-error d-btn-outline">Delete</button>
       </form>
@@ -60,7 +60,7 @@
       {{#if isReportedByMe}}
         <button type="button" class="d-btn d-btn-sm d-btn-ghost ml-auto" disabled>⚑ Reported</button>
       {{else}}
-        <form action="/posts/{{postID}}/report" method="post" class="inline-form ml-auto">
+        <form action="/posts/{{postID}}/report" method="post" class="inline-form ml-auto" data-action="report-post">
           <input type="hidden" name="returnTo" value="{{returnTo}}">
           <button type="submit" class="d-btn d-btn-sm d-btn-warning d-btn-outline">⚑ Report</button>
         </form>
@@ -75,7 +75,7 @@
           <a href="/profile/{{authorID}}" class="font-semibold hover:underline">{{authorUsername}}</a>: {{content}}
         </p>
         {{#if isOwnComment}}
-          <form action="/posts/{{../postID}}/comments/delete" method="post" class="inline-form">
+          <form action="/posts/{{../postID}}/comments/delete" method="post" class="inline-form" data-action="delete-comment">
             <input type="hidden" name="createdAt" value="{{createdAtISO}}">
             <input type="hidden" name="returnTo" value="{{../returnTo}}">
             <button type="submit" class="d-btn d-btn-xs d-btn-ghost">×</button>
@@ -83,7 +83,7 @@
         {{/if}}
       </div>
     {{/each}}
-    <form action="/posts/{{postID}}/comments" method="post" class="comment-form mt-2 flex gap-2">
+    <form action="/posts/{{postID}}/comments" method="post" class="comment-form mt-2 flex gap-2" data-action="create-comment" data-post-id="{{postID}}">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
       <input type="text" name="content" placeholder="Write a comment..." required class="d-input d-input-sm flex-1">
       <button type="submit" class="d-btn d-btn-sm d-btn-primary">Comment</button>

@@ -8,9 +8,10 @@ const Bookmark = require("../models/bookmark");
 const Repost = require("../models/repost");
 const UserRelationship = require("../models/userRelationships");
 const CommunityMember = require("../models/communityMember");
-const { getCurrentUserID } = require("../middleware/auth");
+const { getCurrentUserID, requireAuthOrXhr } = require("../middleware/auth");
 const { hasReported } = require("./reportController");
 const { CODE_LANGUAGES, isValidLanguage } = require("../config/codeLanguages");
+const { getEmbedding } = require("../config/ollama");
 
 // Only the languages actually offered in the compose dropdown get registered --
 // avoids pulling in all ~190 grammars the full "highlight.js" package ships.
@@ -190,11 +191,21 @@ exports.createPost = async (req, res) => {
       if (!membership) return res.redirect(returnTo);
     }
 
-    await Post.create({
+    const newPost = await Post.create({
       authorID: currentUserID, content, mediaURL,
       codeContent: trimmedCode, codeLanguage: finalCodeLanguage,
       communityID: communityID || null
     });
+
+    // Fire-and-forget, same "the redirect must not wait on a local model
+    // call" precedent as the AI chat reply -- embeds the post for RAG
+    // retrieval without holding up the response.
+    if (content && content.trim()) {
+      getEmbedding(content)
+        .then(embedding => newPost.update({ embedding }))
+        .catch(err => console.error("Post embedding failed:", err.message));
+    }
+
     res.redirect(returnTo);
   } catch (err) {
     res.status(500).send("Error creating post: " + err.message);
@@ -203,10 +214,11 @@ exports.createPost = async (req, res) => {
 
 exports.deletePost = async (req, res) => {
   try {
-    const currentUserID = getCurrentUserID(req);
-    if (!currentUserID) return res.redirect("/login");
+    const currentUserID = requireAuthOrXhr(req, res);
+    if (!currentUserID) return;
 
     await Post.destroy({ where: { postID: req.params.id, authorID: currentUserID } });
+    if (req.xhr) return res.json({ success: true });
     res.redirect(req.body.returnTo || "/feed");
   } catch (err) {
     res.status(500).send("Error deleting post: " + err.message);
@@ -329,4 +341,41 @@ exports.showHashtag = async (req, res) => {
   } catch (err) {
     res.status(500).send("Error loading hashtag: " + err.message);
   }
+};
+
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  if (!magA || !magB) return 0;
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+}
+
+// Rudimentary RAG retrieval for the AI assistant: embed the query, score
+// every embedded candidate post in plain JS (no pgvector on this DB -- see
+// db/add-post-embeddings.sql), return the top matches. Excludes posts from
+// either-direction-blocked users -- same lookup getSuggestedPosts already
+// does above, reused rather than duplicated, so someone's private AI chat
+// can't surface content from/to a user they've blocked or been blocked by.
+exports.getRelevantPosts = async (queryText, currentUserID, limit = 4) => {
+  const blocksOut = await UserRelationship.findAll({ where: { followerID: currentUserID, type: "block" }, attributes: ["followingID"] });
+  const blocksIn = await UserRelationship.findAll({ where: { followingID: currentUserID, type: "block" }, attributes: ["followerID"] });
+  const excludedIDs = [...blocksOut.map(r => r.followingID), ...blocksIn.map(r => r.followerID)];
+
+  const queryEmbedding = await getEmbedding(queryText);
+
+  const candidates = await Post.findAll({
+    where: {
+      authorID: excludedIDs.length ? { [Op.notIn]: excludedIDs } : { [Op.ne]: null },
+      embedding: { [Op.ne]: null }
+    },
+    attributes: ["postID", "authorID", "content", "embedding"]
+  });
+
+  const scored = candidates.map(p => ({ post: p, score: cosineSimilarity(queryEmbedding, p.embedding) }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, limit).map(s => s.post);
 };

@@ -20,6 +20,7 @@ const Post = sequelize.define("Post", {
   mediaURL: DataTypes.TEXT,
   codeContent: DataTypes.TEXT,
   codeLanguage: DataTypes.STRING,
+  embedding: DataTypes.JSONB,
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

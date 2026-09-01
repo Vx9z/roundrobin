@@ -9,10 +9,11 @@
 <body>
 {{> navbar}}
 
-{{!-- data-theme here (not on <html>) scopes the PROFILE OWNER's palette to
-      their own card, the way an artist page carries its own colors, while the
-      surrounding chrome stays on the viewer's theme from navContext. --}}
-<div class="relative isolate min-h-screen text-left" data-theme="{{profileTheme}}">
+{{!-- No per-owner data-theme here: profile cards render in the VIEWER's
+      site-wide theme (from <html data-theme> in the layout), same as every
+      other page, so the look stays consistent no matter whose profile you're
+      on. --}}
+<div class="relative isolate min-h-screen text-left">
 
   {{#if backgroundURL}}
     {{!-- Rendered as an <img>, not a CSS background-image: the URL is
@@ -27,6 +28,10 @@
   {{/if}}
 
   <div class="relative z-10 mx-auto max-w-3xl px-4 py-10">
+
+    {{#if profileOwner}}
+      <p class="mb-4"><a href="/feed" class="d-btn d-btn-sm d-btn-ghost no-underline">&larr; Back</a></p>
+    {{/if}}
 
     <div class="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100/60
                 shadow-2xl backdrop-blur-xl backdrop-saturate-150 text-base-content">
@@ -102,9 +107,12 @@
       </div>
     </div>
 
-    <p class="mt-6"><a href="/search" class="back-link">&larr; Back to Search</a></p>
+    {{#unless profileOwner}}
+      <p class="mt-6"><a href="/search" class="back-link">&larr; Back to Search</a></p>
+    {{/unless}}
   </div>
 </div>
 <script src="/js/code-copy.js"></script>
+<script src="/js/post-actions.js"></script>
 </body>
 </html>

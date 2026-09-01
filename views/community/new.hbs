@@ -11,19 +11,19 @@
 
   <h2>Create a Community</h2>
 
-  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+  {{#if error}}<p class="form-error">{{error}}</p>{{/if}}
 
   <form action="/communities" method="post" enctype="multipart/form-data">
     <label>Name:</label>
-    <input type="text" name="name" required><br>
+    <input type="text" name="name" required class="d-input w-full"><br>
 
     <label>Description:</label>
-    <textarea name="description"></textarea><br>
+    <textarea name="description" class="d-textarea w-full"></textarea><br>
 
     <label>Banner:</label>
-    <input type="file" name="banner"><br>
+    <input type="file" name="banner" class="d-file-input d-file-input-sm"><br>
 
-    <button type="submit">Create</button>
+    <button type="submit" class="d-btn d-btn-primary">Create</button>
   </form>
 
   <p><a href="/communities" class="back-link">← Back to Communities</a></p>

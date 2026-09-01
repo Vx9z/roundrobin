@@ -7,10 +7,10 @@
 
 <h2>Register</h2>
 {{#if error}}
-  <p style="color:red">{{error}}</p>
+  <p class="form-error">{{error}}</p>
 {{/if}}
 {{#if success}}
-  <p style="color:green">{{success}}</p>
+  <p class="form-success">{{success}}</p>
 {{/if}}
 
 <form class="login-form" action="/auth/register" method="POST">

@@ -2,7 +2,7 @@ const Post = require("../models/post");
 const User = require("../models/user");
 const Community = require("../models/community");
 const Report = require("../models/report");
-const { getCurrentUserID } = require("../middleware/auth");
+const { getCurrentUserID, requireAuthOrXhr } = require("../middleware/auth");
 
 // One report per reporter per entity. The findOne is the ordinary path; the
 // reports_reporter_entity_key constraint is the real guarantee under a
@@ -31,15 +31,22 @@ exports.hasReported = async (reporterID, entityType, entityID) => {
 // their notification list.
 exports.reportPost = async (req, res) => {
   try {
-    const currentUserID = getCurrentUserID(req);
-    if (!currentUserID) return res.redirect("/login");
+    const currentUserID = requireAuthOrXhr(req, res);
+    if (!currentUserID) return;
 
     const returnTo = req.body.returnTo || "/feed";
     const post = await Post.findByPk(req.params.id);
-    if (!post) return res.redirect(returnTo);
-    if (post.authorID === currentUserID) return res.redirect(returnTo); // no self-report
+    if (!post) {
+      if (req.xhr) return res.status(404).json({ error: "Post not found" });
+      return res.redirect(returnTo);
+    }
+    if (post.authorID === currentUserID) { // no self-report
+      if (req.xhr) return res.status(400).json({ error: "Cannot report your own post" });
+      return res.redirect(returnTo);
+    }
 
     await submitReport("post", post.postID, currentUserID);
+    if (req.xhr) return res.json({ reported: true });
     res.redirect(returnTo);
   } catch (err) {
     res.status(500).send("Error reporting post: " + err.message);

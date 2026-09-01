@@ -8,6 +8,7 @@ const { isBlockedBetween } = require("../middleware/permissions");
 const { getFriends, areMutualFollows } = require("./userController");
 const { createNotification } = require("./notificationController");
 const { getAIResponse, AI_BOT_USER_ID } = require("../config/ollama");
+const { getRelevantPosts } = require("./postController");
 
 function dmKeyFor(userA, userB) {
   return [String(userA).toLowerCase(), String(userB).toLowerCase()].sort().join(":");
@@ -28,6 +29,33 @@ async function generateAIReply(conversationID, io) {
     order: [["createdAt", "DESC"]],
     limit: 20
   });
+
+  // Rudimentary RAG: ground the reply in whatever's actually been posted on
+  // the platform, using the user's own latest message as the retrieval
+  // query. history is DESC, so the first non-bot entry is the most recent
+  // human message. Retrieval failure degrades to no context, never a hard
+  // failure -- the reply must still happen even if Ollama's embed endpoint
+  // is unreachable.
+  const lastUserMsg = history.find(m => m.senderID !== AI_BOT_USER_ID);
+  let ragContext = null;
+  if (lastUserMsg) {
+    try {
+      const relevantPosts = await getRelevantPosts(lastUserMsg.content, lastUserMsg.senderID);
+      if (relevantPosts.length) {
+        const authors = await User.findAll({ where: { userID: relevantPosts.map(p => p.authorID) } });
+        const usernameByID = Object.fromEntries(authors.map(u => [u.userID, u.username]));
+        // Author names are load-bearing here, not decoration: without them the
+        // model has no way to tell "context I retrieved" from "things I did
+        // myself" and answers in the first person as if it were the post's author.
+        ragContext = "Relevant posts made on this platform (these are NOT things you, the assistant, said or did -- " +
+          "attribute each one to its author by name if you reference it):\n" +
+          relevantPosts.map((p, i) => `${i + 1}. ${usernameByID[p.authorID] || "[deleted]"}: ${p.content}`).join("\n");
+      }
+    } catch (err) {
+      console.error("RAG retrieval failed:", err.message);
+    }
+  }
+
   const chatMessages = history.reverse().map(m => ({
     role: m.senderID === AI_BOT_USER_ID ? "assistant" : "user",
     content: m.content
@@ -35,7 +63,7 @@ async function generateAIReply(conversationID, io) {
 
   let replyContent;
   try {
-    replyContent = await getAIResponse(chatMessages);
+    replyContent = await getAIResponse(chatMessages, ragContext);
   } catch (err) {
     console.error("Ollama call failed:", err.message);
     replyContent = "Sorry, I'm having trouble responding right now. Please try again in a moment.";

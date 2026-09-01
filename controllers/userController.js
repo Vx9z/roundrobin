@@ -6,7 +6,6 @@ const { getProfilePosts } = require("./postController");
 const { createNotification } = require("./notificationController");
 const { hasReported } = require("./reportController");
 const { AI_BOT_USER_ID } = require("../config/ollama");
-const { themeNameFor } = require("../config/themes");
 
 // Mutual follows ("friends"): people this user follows who follow back.
 // Returns plain objects [{ userID, username }].
@@ -105,9 +104,6 @@ exports.viewProfile = async (req, res) => {
       avatarURL: user.Profile?.avatarURL,
       bannerURL: user.Profile?.bannerURL,
       backgroundURL: user.Profile?.backgroundURL,
-      // The OWNER's theme, scoped to their profile card only. The rest of the
-      // page (and <html>) stays on the VIEWER's theme from navContext.
-      profileTheme: themeNameFor(user.Profile?.themeID),
       profileOwner: currentUserID === user.userID,
       isBlocked: !!blocked,
       isFollowing: !!following,
