@@ -56,16 +56,7 @@ function highlightCode(code, language) {
 async function hydratePost(post, currentUserID) {
   const author = await User.findByPk(post.authorID);
 
-  const comments = await Comment.findAll({
-    where: { postID: post.postID },
-    order: [["createdAt", "ASC"]]
-  });
-  const commentAuthorIDs = [...new Set(comments.map(c => c.authorID))];
-  const commentAuthors = commentAuthorIDs.length
-    ? await User.findAll({ where: { userID: commentAuthorIDs } })
-    : [];
-  const authorMap = Object.fromEntries(commentAuthors.map(u => [u.userID, u.username]));
-
+  const commentCount = await Comment.count({ where: { postID: post.postID } });
   const likeCount = await Reaction.count({ where: { postID: post.postID, type: "like" } });
   const isLiked = !!(await Reaction.findOne({ where: { postID: post.postID, userID: currentUserID, type: "like" } }));
   const isBookmarked = !!(await Bookmark.findOne({ where: { postID: post.postID, userID: currentUserID } }));
@@ -89,17 +80,29 @@ async function hydratePost(post, currentUserID) {
     isBookmarked,
     isReposted,
     isReportedByMe,
-    comments: comments.map(c => ({
-      authorID: c.authorID,
-      authorUsername: authorMap[c.authorID] || "[deleted]",
-      content: c.content,
-      createdAtDisplay: c.createdAt.toLocaleString(),
-      createdAtISO: c.createdAt.toISOString(),
-      isOwnComment: c.authorID === currentUserID
-    }))
+    commentCount
   };
 }
 exports.hydratePost = hydratePost;
+
+// Full comment thread with author names, used only by the single-post detail
+// page -- hydratePost above only needs a count for list views. Same field
+// shapes hydratePost used to return under `comments`, unchanged.
+exports.getPostComments = async (postID, currentUserID) => {
+  const comments = await Comment.findAll({ where: { postID }, order: [["createdAt", "ASC"]] });
+  const authorIDs = [...new Set(comments.map(c => c.authorID))];
+  const authors = authorIDs.length ? await User.findAll({ where: { userID: authorIDs } }) : [];
+  const usernameByID = Object.fromEntries(authors.map(u => [u.userID, u.username]));
+
+  return comments.map(c => ({
+    authorID: c.authorID,
+    authorUsername: usernameByID[c.authorID] || "[deleted]",
+    content: c.content,
+    createdAtDisplay: c.createdAt.toLocaleString(),
+    createdAtISO: c.createdAt.toISOString(),
+    isOwnComment: c.authorID === currentUserID
+  }));
+};
 
 // Own posts + posts from users this account follows + posts from communities
 // this account is an active member of, newest first. No ranking/algorithm.
@@ -166,6 +169,35 @@ exports.showFeed = async (req, res) => {
     res.render("feed", { title: "Home Feed", currentUserID, returnTo: "/feed", posts, trending, codeLanguages: CODE_LANGUAGES });
   } catch (err) {
     res.status(500).send("Error loading feed: " + err.message);
+  }
+};
+
+exports.showPostDetail = async (req, res) => {
+  try {
+    const currentUserID = getCurrentUserID(req);
+    if (!currentUserID) return res.redirect("/login");
+
+    const post = await Post.findByPk(req.params.id);
+    // returnTo comes from a query string here (unlike every other returnTo in
+    // this app, which is always server-generated) -- only accept a same-origin
+    // relative path, closing an open-redirect angle a crafted link could
+    // otherwise use to make the Back button point off-site.
+    const rt = req.query.returnTo;
+    const returnTo = (rt && rt.startsWith("/") && !rt.startsWith("//")) ? rt : "/feed";
+    if (!post) return res.redirect(returnTo);
+
+    const hydrated = await hydratePost(post, currentUserID);
+    const comments = await exports.getPostComments(post.postID, currentUserID);
+
+    res.render("postDetail", {
+      title: "Post",
+      currentUserID,
+      post: hydrated,
+      comments,
+      returnTo
+    });
+  } catch (err) {
+    res.status(500).send("Error loading post: " + err.message);
   }
 };
 

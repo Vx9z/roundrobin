@@ -1,4 +1,4 @@
-<div class="post-card mb-4 rounded-xl border border-base-content/10 bg-base-100 p-4 text-base-content">
+<div class="post-card mb-4 rounded-xl border border-base-content/10 bg-base-100 p-4 text-base-content" data-post-id="{{postID}}" data-return-to="{{returnTo}}">
   <p class="post-author mb-1 flex flex-wrap items-baseline gap-x-2">
     <a href="/profile/{{authorID}}" class="font-bold hover:underline">{{authorUsername}}</a>
     {{#if repostedByUsername}}
@@ -7,7 +7,7 @@
     <span class="post-date ml-auto text-xs opacity-50">{{createdAtDisplay}}</span>
   </p>
 
-  {{#if content}}<p class="post-content whitespace-pre-wrap break-words">{{content}}</p>{{/if}}
+  {{#if content}}<p class="post-content whitespace-pre-wrap break-words text-left">{{content}}</p>{{/if}}
 
   {{#if mediaURL}}
     {{#if (isVideoURL mediaURL)}}
@@ -28,11 +28,12 @@
         <span class="code-lang-badge absolute right-2 top-2 text-xs opacity-60">{{codeLanguageLabel}}</span>
       {{/if}}
       <button type="button" class="copy-code-btn d-btn d-btn-xs d-btn-ghost absolute bottom-2 right-2">Copy</button>
-      <pre class="hljs overflow-x-auto rounded-lg p-4 pb-10 text-sm font-mono"><code>{{{codeHTML}}}</code></pre>
+      <pre class="hljs overflow-x-auto rounded-lg p-4 pb-10 text-sm font-mono text-left"><code>{{{codeHTML}}}</code></pre>
     </div>
   {{/if}}
 
   <div class="post-actions mt-3 flex flex-wrap items-center gap-2">
+    <a href="/posts/{{postID}}?returnTo={{returnTo}}" class="d-btn d-btn-sm d-btn-ghost no-underline">💬 {{commentCount}}</a>
     <form action="/posts/{{postID}}/like" method="post" class="inline-form" data-action="like">
       <input type="hidden" name="returnTo" value="{{returnTo}}">
       <button type="submit" class="d-btn d-btn-sm {{#if isLiked}}d-btn-secondary{{else}}d-btn-ghost{{/if}}">
@@ -66,27 +67,5 @@
         </form>
       {{/if}}
     {{/if}}
-  </div>
-
-  <div class="post-comments mt-3 border-t border-base-content/10 pt-3">
-    {{#each comments}}
-      <div class="comment mb-1.5 flex items-start gap-1 text-sm">
-        <p class="flex-1 whitespace-pre-wrap break-words">
-          <a href="/profile/{{authorID}}" class="font-semibold hover:underline">{{authorUsername}}</a>: {{content}}
-        </p>
-        {{#if isOwnComment}}
-          <form action="/posts/{{../postID}}/comments/delete" method="post" class="inline-form" data-action="delete-comment">
-            <input type="hidden" name="createdAt" value="{{createdAtISO}}">
-            <input type="hidden" name="returnTo" value="{{../returnTo}}">
-            <button type="submit" class="d-btn d-btn-xs d-btn-ghost">×</button>
-          </form>
-        {{/if}}
-      </div>
-    {{/each}}
-    <form action="/posts/{{postID}}/comments" method="post" class="comment-form mt-2 flex gap-2" data-action="create-comment" data-post-id="{{postID}}">
-      <input type="hidden" name="returnTo" value="{{returnTo}}">
-      <input type="text" name="content" placeholder="Write a comment..." required class="d-input d-input-sm flex-1">
-      <button type="submit" class="d-btn d-btn-sm d-btn-primary">Comment</button>
-    </form>
   </div>
 </div>

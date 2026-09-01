@@ -55,15 +55,14 @@ function notificationText(n) {
   }
 }
 
-// This app has no single-post permalink page, so post-related notifications
-// link to the recipient's own profile (which is guaranteed to show a post
-// they authored) rather than the exact post.
 function notificationLink(n, recipientID) {
   switch (n.type) {
     case "follow": return `/profile/${n.actorID}`;
     case "like":
     case "comment":
-    case "repost":
+    case "repost": return `/posts/${n.entityID}?returnTo=/notifications`;
+    // Unlike the three above, the post this would point at no longer exists
+    // by definition -- fall back to the recipient's own profile instead.
     case "post_removed": return `/profile/${recipientID}`;
     case "community_deleted": return "/communities";
     case "community_join":

@@ -5,6 +5,21 @@
 // returnTo input, so with JS off this degrades to exactly the old (working,
 // just scroll-jumpy) behaviour.
 (function () {
+  // Click the post body (text/media/username row) to open its detail page --
+  // same idea as X's tweet cards. Anything interactive (links, buttons, form
+  // controls) handles its own click instead; this only fires for clicks that
+  // land on plain, non-interactive parts of the card.
+  document.addEventListener("click", function (e) {
+    var card = e.target.closest(".post-card");
+    if (!card || !card.dataset.postId) return;
+    if (e.target.closest("a, button, input, textarea, select, form")) return;
+
+    var url = "/posts/" + card.dataset.postId;
+    if (window.location.pathname === url) return; // already there
+    if (card.dataset.returnTo) url += "?returnTo=" + encodeURIComponent(card.dataset.returnTo);
+    window.location.href = url;
+  });
+
   document.addEventListener("submit", function (e) {
     var form = e.target;
     if (!form.matches("[data-action]")) return;

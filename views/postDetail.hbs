@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed.css">
+</head>
+<body>
+<div class="feed-container">
+  {{> navbar}}
+
+  <p class="mb-4"><a href="{{returnTo}}" class="d-btn d-btn-sm d-btn-ghost no-underline">&larr; Back</a></p>
+
+  {{> post post returnTo=returnTo}}
+
+  <div class="mt-4 rounded-2xl border border-base-content/10 bg-base-100 p-4 text-base-content">
+    <h3 class="mb-3 text-lg font-semibold">Comments ({{comments.length}})</h3>
+    {{#each comments}}
+      <div class="comment mb-1.5 flex items-start gap-1 text-sm">
+        <p class="m-0 flex-1 whitespace-pre-wrap break-words text-left"><a href="/profile/{{authorID}}" class="font-semibold hover:underline">{{authorUsername}}</a>: {{content}}</p>
+        {{#if isOwnComment}}
+          <form action="/posts/{{../post.postID}}/comments/delete" method="post" class="inline-form" data-action="delete-comment">
+            <input type="hidden" name="createdAt" value="{{createdAtISO}}">
+            <input type="hidden" name="returnTo" value="/posts/{{../post.postID}}">
+            <button type="submit" class="d-btn d-btn-xs d-btn-ghost">×</button>
+          </form>
+        {{/if}}
+      </div>
+    {{else}}
+      <p>No comments yet.</p>
+    {{/each}}
+    <form action="/posts/{{post.postID}}/comments" method="post" class="comment-form mt-2 flex gap-2" data-action="create-comment" data-post-id="{{post.postID}}">
+      <input type="hidden" name="returnTo" value="/posts/{{post.postID}}">
+      <input type="text" name="content" placeholder="Write a comment..." required class="d-input d-input-sm flex-1 text-left">
+      <button type="submit" class="d-btn d-btn-sm d-btn-primary">Comment</button>
+    </form>
+  </div>
+</div>
+<script src="/js/code-copy.js"></script>
+<script src="/js/post-actions.js"></script>
+</body>
+</html>

@@ -16,7 +16,7 @@
 
     <form action="/posts" method="post" enctype="multipart/form-data"
           class="mb-5 rounded-xl border border-base-content/10 bg-base-200 p-4">
-      <textarea name="content" placeholder="What's happening?" class="d-textarea w-full"></textarea>
+      <textarea name="content" placeholder="What's happening?" rows="3" class="d-textarea w-full text-left"></textarea>
       <div class="mt-2 flex items-center gap-2">
         <input type="file" name="media" class="d-file-input d-file-input-sm">
         <button type="button" class="d-btn d-btn-sm d-btn-ghost" data-code-toggle="#compose-code-panel">&lt;/&gt; Code</button>
@@ -27,7 +27,7 @@
           {{#each codeLanguages}}<option value="{{this.id}}">{{this.label}}</option>{{/each}}
         </select>
         <textarea name="codeContent" placeholder="Paste code here..." rows="6"
-                  class="d-textarea mt-2 w-full font-mono text-sm"></textarea>
+                  class="d-textarea mt-2 w-full font-mono text-sm text-left"></textarea>
       </div>
     </form>
 
