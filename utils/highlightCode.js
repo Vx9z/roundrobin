@@ -1,8 +1,10 @@
 // Deliberately DB-free: this file must never require anything under models/
-// or config/database.js. postController.js is its main consumer, but
-// bots/codeBot also imports this directly for its own screenshot rendering
-// -- a bot script importing postController.js would open a real Sequelize/
-// Postgres connection as a module-load side effect, which it must never do.
+// or config/database.js. postController.js is its only consumer today, but
+// this invariant matters beyond that -- any future DB-free script (like
+// bots/codeBot, which posts real code via this same highlighting/language
+// path but talks to the server over HTTP instead of importing
+// postController.js directly) depends on requiring this file never opening
+// a real Sequelize/Postgres connection as a module-load side effect.
 const hljs = require("highlight.js/lib/core");
 const { isValidLanguage } = require("../config/codeLanguages");
 

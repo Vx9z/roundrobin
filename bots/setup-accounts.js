@@ -28,4 +28,11 @@ async function ensureAccount(bot) {
     await ensureAccount(bot);
   }
   console.log("[setup] done.");
-})();
+})().catch((err) => {
+  // Without this, a rejection here (e.g. the app server isn't up yet, despite
+  // the usage note above) is an unhandled rejection -- Node kills the process
+  // with a raw stack trace, and any bots later in iteration order silently
+  // never get registered.
+  console.error("[setup] failed:", err.message);
+  process.exit(1);
+});

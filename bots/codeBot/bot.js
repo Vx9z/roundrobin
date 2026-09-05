@@ -20,19 +20,63 @@ function loadState() {
   if (!Array.isArray(raw.topics) || raw.topics.length === 0) {
     throw new Error("topics.json has no topics configured");
   }
-  // Defensive clamp -- the topics list can be hand-edited/shrunk at any time.
-  raw.topicIndex = ((raw.topicIndex % raw.topics.length) + raw.topics.length) % raw.topics.length;
+  // Defensive clamp -- the topics list can be hand-edited/shrunk at any
+  // time, and topicIndex itself could be dropped/malformed by a hand-edit.
+  // A non-numeric topicIndex must not silently become NaN here: `NaN %
+  // length` is still NaN, `topics[NaN]` is undefined, and every later
+  // increment keeps operating on the same NaN with no self-recovery.
+  const index = Number.isInteger(raw.topicIndex) ? raw.topicIndex : 0;
+  raw.topicIndex = ((index % raw.topics.length) + raw.topics.length) % raw.topics.length;
   return raw;
 }
 
 function saveState(state) {
-  fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+  // Re-read the on-disk `topics` list right before writing rather than
+  // trusting the copy loaded at the start of this cycle -- a cycle takes
+  // tens of seconds (two sequential Ollama calls), long enough for a
+  // hand-edit to topics.json to land mid-cycle, and blindly writing back
+  // the stale in-memory topics array would silently revert that edit.
+  let topics = state.topics;
+  try {
+    const onDisk = JSON.parse(fs.readFileSync(STATE_PATH, "utf8"));
+    if (Array.isArray(onDisk.topics) && onDisk.topics.length > 0) topics = onDisk.topics;
+  } catch { /* unreadable/mid-write -- fall back to the in-memory list */ }
+
+  fs.writeFileSync(STATE_PATH, JSON.stringify({ ...state, topics }, null, 2));
 }
 
+// Finds the first top-level {...} object in the response via string-aware
+// brace counting (braces inside quoted strings, e.g. a code snippet in the
+// "code" field, don't affect depth) rather than a greedy regex spanning
+// from the first "{" to the LAST "}" in the whole response -- the greedy
+// version can swallow unrelated braces the model wrote in surrounding prose
+// and fail to parse a perfectly well-formed response.
 function extractJson(raw) {
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try { return JSON.parse(match[0]); } catch { return null; }
+  const start = raw.indexOf("{");
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        try { return JSON.parse(raw.slice(start, i + 1)); } catch { return null; }
+      }
+    }
+  }
+  return null;
 }
 
 function truncate(text, max) {

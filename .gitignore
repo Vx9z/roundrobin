@@ -1,0 +1,4 @@
+# Per-bot PID lock files (bots/shared/lock.js) -- pure runtime state, holds
+# a real local process id, meaningless (and actively misleading) once
+# committed. Everything else in this repo is deliberately committed as-is.
+bots/*/.lock

@@ -15,11 +15,13 @@ async function cycle() {
   const { buffer, ext } = await fetchImage("https://picsum.photos/1024/768");
   const filePath = saveImage(__dirname, buffer, ext);
 
-  const caption = await getAIResponse([
+  const raw = await getAIResponse([
     { role: "user", content: "Write a short, peaceful one-sentence caption for a scenic nature/landscape photo. No hashtags, no quotes, under 20 words." }
   ]);
+  const caption = raw.trim();
+  if (!caption) throw new Error("Ollama returned an empty caption");
 
-  await createPost(cookie, { content: caption.trim(), filePath });
+  await createPost(cookie, { content: caption, filePath });
   console.log(`[sceneryBot] posted ${filePath} at ${new Date().toISOString()}`);
 }
 

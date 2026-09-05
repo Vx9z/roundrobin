@@ -12,6 +12,17 @@ exports.register = async (req, res) => {
       return res.render("auth/register", { error: "Username already taken" });
     }
 
+    // Same check for email -- without it, a colliding email falls through
+    // to the generic catch below with a raw Sequelize error message instead
+    // of the same "already taken" wording setup-accounts.js's response
+    // matcher (and human users) already recognize for a duplicate username.
+    if (email) {
+      const existingEmail = await User.findOne({ where: { email } });
+      if (existingEmail) {
+        return res.render("auth/register", { error: "Email already taken" });
+      }
+    }
+
     // Hash password and create user
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ username, email, passwordHash: hash });
