@@ -4,7 +4,18 @@ const User = require("../models/User");
 const UserProfile = require("../models/userProfile");
 
 exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, password } = req.body;
+  // email is optional (the form's own placeholder says so), but a blank
+  // field posts as "" not undefined. email has unique:true, and unlike NULL
+  // -- which Postgres's unique index always treats as distinct from every
+  // other NULL -- "" is a real, equal-to-itself value. The very first two
+  // users who ever left email blank would collide on it, and every
+  // registration after that with a blank email would fail with a bare
+  // "Validation error" (Sequelize's default message for a unique-constraint
+  // hit) and never create the account. Normalizing blank/whitespace to null
+  // keeps "no email" actually meaning no email, for an unlimited number of
+  // accounts.
+  const email = req.body.email && req.body.email.trim() ? req.body.email.trim() : null;
   try {
     // Check if username already exists
     const existing = await User.findOne({ where: { username } });

@@ -43,7 +43,13 @@ exports.updateProfile = async (req, res) => {
     const currentUserID = getCurrentUserID(req);
     if (!currentUserID) return res.redirect("/login");
 
-    const { username, email, bio, themeID, removeAvatar, removeBanner, removeBackground } = req.body;
+    const { username, bio, themeID, removeAvatar, removeBanner, removeBackground } = req.body;
+    // Same normalization as authController.register -- a blank email field
+    // posts as "", and email is a unique column where "" (unlike NULL) is a
+    // real value that collides with any other blank-email account. Left
+    // as-is, saving your profile with no email once another user has ever
+    // done the same crashes this endpoint with a bare "Validation error".
+    const email = req.body.email && req.body.email.trim() ? req.body.email.trim() : null;
 
     // BUG FIX: the payload is built CONDITIONALLY. The previous version always
     // sent avatarURL/bannerURL and let them default to null when no file was
